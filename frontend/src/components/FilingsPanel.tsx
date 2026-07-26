@@ -70,7 +70,7 @@ export function FilingsPanel({ ticker }: Props) {
   }
 
   return (
-    <section className="border border-terminal-border bg-terminal-panel/30 p-4">
+    <section className="panel-plain p-4">
       <div className="flex items-baseline justify-between gap-3 flex-wrap">
         <h3 className="font-mono text-[10px] uppercase tracking-[0.16em] text-terminal-accent">
           SEC filings · live from EDGAR

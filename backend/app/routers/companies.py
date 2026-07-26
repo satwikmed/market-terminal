@@ -14,7 +14,7 @@ router = APIRouter(prefix="/api/companies", tags=["companies"])
 async def list_companies(
     q: str | None = None,
     sector: str | None = None,
-    limit: int = Query(500, le=600),
+    limit: int = Query(600, le=600),
     db: AsyncSession = Depends(get_db),
 ):
     stmt = select(Company)

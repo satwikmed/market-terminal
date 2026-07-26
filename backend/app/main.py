@@ -14,9 +14,13 @@ from app.routers import (
     bubble,
     companies,
     filings,
+    fundamentals,
     macro,
     ownership,
+    portfolio,
+    quant,
     relationships,
+    screener,
     status,
     ticker,
 )
@@ -38,7 +42,7 @@ async def _full_refresh() -> None:
     try:
         async with SessionLocal() as db:
             result = await refresh_universe(
-                db, with_fundamentals=True, with_history=True, history_period="6mo"
+                db, with_fundamentals=True, with_history=True, history_period="2y"
             )
         BOOTSTRAP.update(state="complete", detail=result)
         logger.info("initial market load complete: %s", result)
@@ -136,6 +140,10 @@ app.include_router(ai.router)
 app.include_router(macro.router)
 app.include_router(ownership.router)
 app.include_router(filings.router)
+app.include_router(fundamentals.router)
+app.include_router(quant.router)
+app.include_router(screener.router)
+app.include_router(portfolio.router)
 app.include_router(status.router)
 
 

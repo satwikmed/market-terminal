@@ -8,7 +8,6 @@ type Props = {
   className?: string;
 };
 
-/** Site-wide plain-English metric cell — tooltip, not a card. */
 export function MetricExplain({ label, value, plainEnglish, className = '' }: Props) {
   const [open, setOpen] = useState(false);
 
@@ -29,9 +28,11 @@ export function MetricExplain({ label, value, plainEnglish, className = '' }: Pr
       </div>
       <p className="mt-1.5 text-sm text-terminal-muted leading-snug max-w-prose">{plainEnglish}</p>
       {open && (
-        <div className="absolute z-20 left-0 right-0 top-full mt-1 p-3 bg-[#121925] border border-terminal-accent/30 text-sm text-terminal-text shadow-xl fade-up">
-          <span className="text-terminal-accent font-mono text-[10px] uppercase tracking-widest">Explain like I'm 5</span>
-          <p className="mt-1 leading-relaxed">{plainEnglish}</p>
+        <div className="absolute z-20 left-0 right-0 top-full mt-1 p-3 bg-terminal-text text-terminal-panel border-l-4 border-terminal-accent text-sm shadow-lg fade-up">
+          <span className="text-terminal-accent font-mono text-[10px] uppercase tracking-widest">
+            Explain like I&apos;m 5
+          </span>
+          <p className="mt-1 leading-relaxed text-white/85">{plainEnglish}</p>
         </div>
       )}
     </div>

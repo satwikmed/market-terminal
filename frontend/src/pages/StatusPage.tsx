@@ -36,10 +36,11 @@ export function StatusPage() {
 
   return (
     <div className="space-y-6 fade-up max-w-5xl">
-      <div className="border-b border-terminal-border pb-4">
-        <h2 className="text-3xl font-semibold tracking-tight">Where this data comes from</h2>
-        <p className="text-sm text-terminal-muted mt-2 max-w-2xl leading-relaxed">
-          Most finance demos quietly ship fake numbers. This page exists so you don't have to take
+      <div className="border-b-2 border-terminal-text pb-5">
+        <p className="font-mono text-[10px] uppercase tracking-[0.28em] text-terminal-accent mb-2">Provenance</p>
+        <h2 className="brand-mark text-[clamp(2rem,5vw,3.5rem)]">Where this data comes from</h2>
+        <p className="text-base text-terminal-muted mt-3 max-w-2xl leading-snug">
+          Most finance demos quietly ship fake numbers. This page exists so you don&apos;t have to take
           anything here on faith: every source, its current state, and how stale it is.
         </p>
         <div className="mt-3 flex flex-wrap gap-4 font-mono text-[11px] text-terminal-muted">
@@ -68,7 +69,7 @@ export function StatusPage() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {status.sources.map((s) => (
-          <section key={s.id} className="border border-terminal-border bg-terminal-panel/30 p-4">
+          <section key={s.id} className="panel-plain p-4">
             <div className="flex items-start justify-between gap-3">
               <div>
                 <h3 className="font-semibold">{s.label}</h3>
@@ -91,7 +92,7 @@ export function StatusPage() {
         ))}
       </div>
 
-      <section className="border border-terminal-border bg-terminal-panel/30 p-4">
+      <section className="panel-plain p-4">
         <h3 className="font-mono text-[10px] uppercase tracking-[0.16em] text-terminal-accent">
           Automatic refresh
         </h3>
@@ -132,7 +133,7 @@ export function StatusPage() {
         )}
       </section>
 
-      <section className="border border-terminal-border bg-terminal-panel/30 p-4">
+      <section className="panel-plain p-4">
         <h3 className="font-mono text-[10px] uppercase tracking-[0.16em] text-terminal-accent">
           What this app will not do
         </h3>

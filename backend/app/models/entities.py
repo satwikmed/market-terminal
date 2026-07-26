@@ -74,6 +74,18 @@ class AICache(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime)
 
 
+class FinancialsCache(Base):
+    """Parsed SEC XBRL company-facts (statements + ratios), cached as JSON."""
+
+    __tablename__ = "financials_cache"
+    __table_args__ = (UniqueConstraint("ticker", name="uq_financials_ticker"),)
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    ticker: Mapped[str] = mapped_column(String(16), index=True)
+    payload: Mapped[str] = mapped_column(Text)
+    fetched_at: Mapped[datetime] = mapped_column(DateTime)
+
+
 class MacroObservation(Base):
     __tablename__ = "macro_observations"
     __table_args__ = (UniqueConstraint("series_id", "obs_date", name="uq_macro_series_date"),)

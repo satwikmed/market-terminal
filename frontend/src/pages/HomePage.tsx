@@ -48,44 +48,17 @@ export function HomePage() {
   }, [query, nodes]);
 
   return (
-    <div className="grid grid-cols-1 xl:grid-cols-[1fr_320px] gap-4 h-[calc(100vh-210px)] min-h-[600px]">
-      <section className="border border-terminal-border bg-terminal-panel/40 overflow-hidden flex flex-col fade-up">
-        <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-3 border-b border-terminal-border">
-          <div>
-            <h2 className="text-lg font-semibold tracking-tight">Industry Bubble Map</h2>
-            <p className="text-sm text-terminal-muted">
-              All {nodes.length || '500'} S&P 500 companies — size is market cap, clustered by sector.
-            </p>
-          </div>
-          <div className="flex flex-wrap gap-2 font-mono text-[11px] uppercase tracking-wider">
-            {(
-              [
-                ['industry', 'By Industry'],
-                ['relationships', 'Relationships'],
-                ['rate', 'Rate Sensitivity'],
-              ] as const
-            ).map(([id, label]) => (
-              <button
-                key={id}
-                type="button"
-                onClick={() => setMode(id)}
-                className={`px-3 py-1.5 border transition-colors ${
-                  mode === id
-                    ? 'border-terminal-accent text-terminal-accent'
-                    : 'border-terminal-border text-terminal-muted hover:text-terminal-text'
-                }`}
-              >
-                {label}
-              </button>
-            ))}
-          </div>
-        </div>
+    <div className="absolute inset-0 overflow-hidden">
+      {/* Full-bleed map — the dominant visual plane */}
+      <div className="absolute inset-0 map-bloom">
         {loading ? (
-          <div className="flex-1 grid place-items-center font-mono text-terminal-muted">Loading universe…</div>
+          <div className="h-full grid place-items-center font-mono text-terminal-muted">
+            Loading the S&amp;P 500…
+          </div>
         ) : error ? (
-          <div className="flex-1 grid place-items-center text-down p-8 text-center">
+          <div className="h-full grid place-items-center text-down p-8 text-center">
             <div>
-              <p className="font-mono">Backend unreachable</p>
+              <p className="font-mono font-semibold">Backend unreachable</p>
               <p className="text-sm text-terminal-muted mt-2">Start the API on :8000 — {error}</p>
             </div>
           </div>
@@ -97,77 +70,119 @@ export function HomePage() {
             relatedTickers={related}
             rateSensitivity={rateSensitivity}
             onSelect={setFocus}
+            bare
           />
         )}
-      </section>
+      </div>
 
-      <aside className="border border-terminal-border bg-terminal-panel/40 p-4 overflow-auto fade-up" style={{ animationDelay: '80ms' }}>
-        <label className="block font-mono text-[10px] uppercase tracking-[0.16em] text-terminal-muted">Find ticker</label>
-        <input
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder="AAPL, Microsoft…"
-          className="mt-2 w-full bg-terminal-bg border border-terminal-border px-3 py-2 font-mono text-sm outline-none focus:border-terminal-accent"
-        />
-        {filteredHint && (
-          <button
-            type="button"
-            className="mt-2 text-left w-full text-sm text-terminal-accent hover:underline font-mono"
-            onClick={() => {
-              setFocus(filteredHint.ticker);
-              setMode('relationships');
-            }}
-          >
-            Focus {filteredHint.ticker} · {filteredHint.name}
-          </button>
-        )}
-
-        <div className="mt-6">
-          <h3 className="font-mono text-[10px] uppercase tracking-[0.16em] text-terminal-accent">
-            {mode === 'relationships' ? `Links · ${focus ?? '—'}` : mode === 'rate' ? 'Fed rate overlay' : 'How to read this'}
-          </h3>
-          {mode === 'industry' && (
-            <p className="mt-2 text-sm text-terminal-muted leading-relaxed">
-              Bigger bubbles = bigger companies. Green/red = today's move. Clusters sit near their industry peers so you can see which corners of the market are winning or losing together.
-            </p>
-          )}
-          {mode === 'rate' && (
-            <p className="mt-2 text-sm text-terminal-muted leading-relaxed">
-              Color encodes historical sensitivity to rising rates (redder = tended to weaken). Real estate, banks, and growth tech often react most — a historical tendency, not a prediction.
-            </p>
-          )}
-          {mode === 'relationships' && (
-            <ul className="mt-3 space-y-3">
-              {!focus && (
-                <li className="text-sm text-terminal-muted">
-                  Click any bubble — every S&P 500 company now has mapped connections (industry peers plus curated supplier/customer/partner links).
-                </li>
-              )}
-              {focus && rels.length === 0 && (
-                <li className="text-sm text-terminal-muted">Loading connections for {focus}…</li>
-              )}
-              {rels.map((r) => (
-                <li key={r.target_ticker} className="border-b border-terminal-border/70 pb-3">
-                  <button
-                    type="button"
-                    className="font-mono text-sm text-terminal-accent hover:underline"
-                    onClick={() => setFocus(r.target_ticker)}
-                  >
-                    {r.target_ticker}
-                  </button>
-                  <Link to={`/company/${r.target_ticker}`} className="ml-2 text-[10px] text-terminal-muted hover:text-terminal-text">
-                    open
-                  </Link>
-                  <span className="ml-2 text-[10px] uppercase tracking-wider text-terminal-warn font-mono">
-                    {r.relationship_type}
-                  </span>
-                  <p className="text-sm text-terminal-muted mt-1 leading-snug">{r.plain_english}</p>
-                </li>
-              ))}
-            </ul>
-          )}
+      {/* Brand + controls overlay — one composition, not a dashboard chrome */}
+      <div className="pointer-events-none absolute inset-0 z-20 flex flex-col justify-between p-4 md:p-6 lg:p-8">
+        <div className="pointer-events-auto max-w-3xl stamp-in">
+          <p className="font-mono text-[10px] uppercase tracking-[0.28em] text-terminal-accent mb-3">
+            S&amp;P 500 · live map
+          </p>
+          <h1 className="brand-mark text-[clamp(2.75rem,9vw,7.5rem)] text-terminal-text">
+            Lumen
+            <span className="text-terminal-accent">.</span>
+          </h1>
+          <p className="mt-4 max-w-md text-base md:text-lg text-terminal-muted leading-snug">
+            Every company as a bubble. Size is market cap. Color is today’s move. Click anything —
+            we’ll explain it in English.
+          </p>
+          <div className="signal-rule w-16 mt-5" />
         </div>
-      </aside>
+
+        <div className="pointer-events-auto flex flex-col lg:flex-row lg:items-end justify-between gap-4">
+          <div className="flex flex-wrap gap-2 fade-up" style={{ animationDelay: '120ms' }}>
+            {(
+              [
+                ['industry', 'By industry'],
+                ['relationships', 'Relationships'],
+                ['rate', 'Rate sensitivity'],
+              ] as const
+            ).map(([id, label]) => (
+              <button
+                key={id}
+                type="button"
+                onClick={() => setMode(id)}
+                className={`btn-ghost ${mode === id ? 'is-active' : ''}`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+
+          <div
+            className="w-full lg:w-[320px] panel-plain p-3 backdrop-blur-md fade-up"
+            style={{ animationDelay: '200ms' }}
+          >
+            <label className="block font-mono text-[10px] uppercase tracking-[0.16em] text-terminal-muted">
+              Jump to a company
+            </label>
+            <input
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="AAPL, Microsoft…"
+              className="mt-2 w-full bg-transparent border-b border-terminal-border px-0 py-2 font-mono text-sm outline-none focus:border-terminal-accent placeholder:text-terminal-muted"
+            />
+            {filteredHint && (
+              <button
+                type="button"
+                className="mt-2 text-left w-full text-sm text-terminal-accent hover:underline font-mono"
+                onClick={() => {
+                  setFocus(filteredHint.ticker);
+                  setMode('relationships');
+                }}
+              >
+                Focus {filteredHint.ticker} · {filteredHint.name}
+              </button>
+            )}
+
+            <div className="mt-3 pt-3 border-t border-terminal-border">
+              {mode === 'industry' && (
+                <p className="text-xs text-terminal-muted leading-relaxed">
+                  Green rises, red falls. Clusters are sectors sitting near each other.
+                </p>
+              )}
+              {mode === 'rate' && (
+                <p className="text-xs text-terminal-muted leading-relaxed">
+                  Redder = historically weakened when rates rose. Tendency, not a forecast.
+                </p>
+              )}
+              {mode === 'relationships' && (
+                <div className="max-h-36 overflow-auto space-y-2">
+                  {!focus && (
+                    <p className="text-xs text-terminal-muted">Click a bubble to map its network.</p>
+                  )}
+                  {focus && rels.length === 0 && (
+                    <p className="text-xs text-terminal-muted">Loading {focus}…</p>
+                  )}
+                  {rels.slice(0, 6).map((r) => (
+                    <div key={r.target_ticker} className="text-xs">
+                      <button
+                        type="button"
+                        className="font-mono text-terminal-accent hover:underline"
+                        onClick={() => setFocus(r.target_ticker)}
+                      >
+                        {r.target_ticker}
+                      </button>
+                      <Link
+                        to={`/company/${r.target_ticker}`}
+                        className="ml-2 text-terminal-muted hover:text-terminal-text"
+                      >
+                        open
+                      </Link>
+                      <span className="ml-2 font-mono text-[9px] uppercase text-terminal-warn">
+                        {r.relationship_type}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

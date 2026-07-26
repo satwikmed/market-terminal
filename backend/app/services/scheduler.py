@@ -62,7 +62,7 @@ async def refresh_daily_job() -> None:
     try:
         async with SessionLocal() as db:
             result = await refresh_universe(
-                db, with_fundamentals=True, with_history=True, history_period="6mo"
+                db, with_fundamentals=True, with_history=True, history_period="2y"
             )
         _record("daily_market", "ok", {k: result[k] for k in ("quotes", "fundamentals", "history_bars") if k in result})
         logger.info("scheduled daily refresh: %s", result)

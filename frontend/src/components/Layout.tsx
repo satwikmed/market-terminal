@@ -1,60 +1,89 @@
-import { NavLink, Outlet } from 'react-router-dom';
+import { NavLink, Outlet, useLocation } from 'react-router-dom';
 import { TickerTape } from './TickerTape';
 
 const links = [
-  { to: '/', label: 'Bubble Map' },
-  { to: '/macro', label: 'US Economy' },
-  { to: '/brief', label: 'Weekly Brief' },
-  { to: '/data', label: 'Data & Sources' },
+  { to: '/map', label: 'Map' },
+  { to: '/screener', label: 'Screener' },
+  { to: '/risk', label: 'Risk' },
+  { to: '/portfolio', label: 'Portfolio' },
+  { to: '/compare', label: 'Compare' },
+  { to: '/macro', label: 'Economy' },
+  { to: '/brief', label: 'Brief' },
+  { to: '/data', label: 'Sources' },
 ];
 
 export function Layout() {
+  const { pathname } = useLocation();
+  const isMap = pathname === '/map';
+
   return (
-    <div className="min-h-full terminal-grid flex flex-col">
-      <header className="border-b border-terminal-border bg-terminal-bg/80 backdrop-blur-md sticky top-0 z-30">
-        <div className="max-w-[1600px] mx-auto px-4 py-3 flex items-end justify-between gap-6">
-          <div className="fade-up">
-            <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-terminal-accent">S&P 500 · Plain English</div>
-            <h1 className="text-2xl md:text-3xl font-semibold tracking-tight text-terminal-text mt-0.5">
-              Plain English Terminal
-            </h1>
-            <p className="text-sm text-terminal-muted mt-1 max-w-xl">
-              Bloomberg density, beginner clarity — every number explained.
+    <div className={`min-h-full terminal-grid flex flex-col ${isMap ? 'h-dvh overflow-hidden' : ''}`}>
+      <header className="relative z-40 shrink-0">
+        <div className="flex flex-col sm:flex-row sm:items-stretch border-b-2 border-terminal-text">
+          <NavLink
+            to="/"
+            className="group flex items-center gap-3 px-4 md:px-6 py-3 bg-terminal-text text-terminal-panel hover:bg-terminal-accent transition-colors shrink-0"
+          >
+            <span className="brand-mark text-xl md:text-2xl tracking-tight">Lumen</span>
+            <span className="font-mono text-[10px] uppercase tracking-[0.18em] opacity-70 group-hover:opacity-100 leading-tight">
+              S&amp;P 500
+              <br />
+              in plain English
+            </span>
+          </NavLink>
+
+          <div className="flex-1 flex flex-wrap items-center justify-between gap-3 px-4 md:px-6 py-3 bg-terminal-panel">
+            <p className="hidden md:block text-sm text-terminal-muted max-w-md leading-snug">
+              Live map · filings · macro — explained without jargon.
             </p>
+            <nav className="flex flex-wrap items-center gap-1 ml-auto font-mono text-[11px] uppercase tracking-[0.14em]">
+              {links.map((l) => (
+                <NavLink
+                  key={l.to}
+                  to={l.to}
+                  end={l.to === '/map'}
+                  className={({ isActive }) =>
+                    `px-2.5 py-1.5 transition-colors ${
+                      isActive
+                        ? 'text-terminal-accent underline decoration-2 underline-offset-4'
+                        : 'text-terminal-muted hover:text-terminal-text'
+                    }`
+                  }
+                >
+                  {l.label}
+                </NavLink>
+              ))}
+            </nav>
           </div>
-          <nav className="flex items-center gap-1 font-mono text-xs uppercase tracking-wider">
-            {links.map((l) => (
-              <NavLink
-                key={l.to}
-                to={l.to}
-                end={l.to === '/'}
-                className={({ isActive }) =>
-                  `px-3 py-2 border transition-colors ${
-                    isActive
-                      ? 'border-terminal-accent text-terminal-accent bg-terminal-accent/10'
-                      : 'border-transparent text-terminal-muted hover:text-terminal-text hover:border-terminal-border'
-                  }`
-                }
-              >
-                {l.label}
-              </NavLink>
-            ))}
-          </nav>
         </div>
         <TickerTape />
       </header>
-      <main className="flex-1 max-w-[1600px] w-full mx-auto px-4 py-4">
+
+      <main className={`flex-1 w-full ${isMap ? 'min-h-0 relative' : 'max-w-[1600px] mx-auto px-4 md:px-6 py-6'}`}>
         <Outlet />
       </main>
-      <footer className="border-t border-terminal-border py-3 px-4 text-[11px] font-mono text-terminal-muted flex flex-wrap gap-x-4 gap-y-1 justify-between max-w-[1600px] mx-auto w-full">
-        <span>Equities · S&P 500 only · Not investment advice</span>
-        <span>
-          Yahoo prices · SEC EDGAR filings · FRED macro ·{' '}
-          <NavLink to="/data" className="text-terminal-accent hover:underline">
-            every source listed here
-          </NavLink>
-        </span>
-      </footer>
+
+      {!isMap && (
+        <footer className="border-t-2 border-terminal-text py-3 px-4 md:px-6 font-mono text-[11px] text-terminal-muted flex flex-wrap gap-x-4 gap-y-1 justify-between max-w-[1600px] mx-auto w-full">
+          <span>
+            Done by{' '}
+            <a
+              href="https://satwikmedipalli.dev"
+              target="_blank"
+              rel="noreferrer"
+              className="text-terminal-accent hover:underline"
+            >
+              Satwik Medipalli
+            </a>
+          </span>
+          <span>
+            Yahoo · SEC EDGAR · FRED ·{' '}
+            <NavLink to="/data" className="text-terminal-accent hover:underline">
+              every source listed
+            </NavLink>
+          </span>
+        </footer>
+      )}
     </div>
   );
 }

@@ -12,26 +12,28 @@ type Props = {
   relatedTickers?: Set<string>;
   mode: Mode;
   onSelect?: (ticker: string) => void;
+  /** Drop chrome — used when the map is the full-bleed home composition */
+  bare?: boolean;
 };
 
 const SECTOR_COLORS: Record<string, string> = {
-  'Information Technology': '#3dd6c6',
-  'Health Care': '#7aa2f7',
-  Financials: '#f0b429',
-  'Consumer Discretionary': '#e0aaff',
-  'Communication Services': '#89b4fa',
-  Industrials: '#a6e3a1',
-  'Consumer Staples': '#94e2d5',
-  Energy: '#fab387',
-  Utilities: '#89dceb',
-  'Real Estate': '#cba6f7',
-  Materials: '#f9e2af',
+  'Information Technology': '#ff6b4a',
+  'Health Care': '#2a9d8f',
+  Financials: '#e9a820',
+  'Consumer Discretionary': '#e76f51',
+  'Communication Services': '#457b9d',
+  Industrials: '#6a994e',
+  'Consumer Staples': '#bc6c25',
+  Energy: '#d62828',
+  Utilities: '#4a6fa5',
+  'Real Estate': '#9b5de5',
+  Materials: '#c9a227',
 };
 
 function changeColor(pct: number): string {
   const t = Math.max(-1, Math.min(1, pct / 3));
-  if (t >= 0) return d3.interpolateRgb('#2a3340', '#3ecf8e')(t);
-  return d3.interpolateRgb('#2a3340', '#f07178')(-t);
+  if (t >= 0) return d3.interpolateRgb('#c5c9d2', '#007a4d')(t);
+  return d3.interpolateRgb('#c5c9d2', '#c8102e')(-t);
 }
 
 export function BubbleMap({
@@ -41,6 +43,7 @@ export function BubbleMap({
   relatedTickers,
   mode,
   onSelect,
+  bare = false,
 }: Props) {
   const svgRef = useRef<SVGSVGElement | null>(null);
   const wrapRef = useRef<HTMLDivElement | null>(null);
@@ -153,23 +156,23 @@ export function BubbleMap({
         if (mode === 'rate') {
           const s = rateSensitivity[d.sector] ?? 0;
           return s < 0
-            ? d3.interpolateRgb('#2a3340', '#f07178')(Math.min(1, Math.abs(s)))
-            : d3.interpolateRgb('#2a3340', '#3dd6c6')(Math.min(1, s * 2));
+            ? d3.interpolateRgb('#c5c9d2', '#c8102e')(Math.min(1, Math.abs(s)))
+            : d3.interpolateRgb('#c5c9d2', '#007a4d')(Math.min(1, s * 2));
         }
         return colorByChange ? changeColor(d.change_pct) : SECTOR_COLORS[d.sector] ?? '#7a8799';
       })
       .attr('stroke', (d) => {
-        if (d.ticker === focusTicker) return '#f0b429';
-        if (relatedTickers?.has(d.ticker)) return '#3dd6c6';
-        return 'rgba(255,255,255,0.12)';
+        if (d.ticker === focusTicker) return '#ff2400';
+        if (relatedTickers?.has(d.ticker)) return '#0a0b0e';
+        return 'rgba(10,11,14,0.18)';
       })
-      .attr('stroke-width', (d) => (d.ticker === focusTicker || relatedTickers?.has(d.ticker) ? 2.5 : 0.8))
+      .attr('stroke-width', (d) => (d.ticker === focusTicker || relatedTickers?.has(d.ticker) ? 2.5 : 0.7))
       .attr('opacity', (d) => {
         if (mode === 'relationships' && focusTicker) {
           if (d.ticker === focusTicker || relatedTickers?.has(d.ticker)) return 1;
-          return 0.1;
+          return 0.12;
         }
-        return 0.92;
+        return 0.9;
       });
 
     node
@@ -186,8 +189,8 @@ export function BubbleMap({
       .text((d) => d.ticker)
       .attr('text-anchor', 'middle')
       .attr('dy', '0.35em')
-      .attr('fill', '#0a0e14')
-      .attr('font-family', 'IBM Plex Mono, monospace')
+      .attr('fill', '#0a0b0e')
+      .attr('font-family', 'JetBrains Mono, monospace')
       .attr('font-weight', 600)
       .attr('pointer-events', 'none')
       .attr('opacity', 0);
@@ -198,12 +201,12 @@ export function BubbleMap({
         .attr('opacity', (d) => {
           const screenR = d.r * k;
           // Labels appear once the bubble is large enough on screen
-          if (screenR >= 9) return 1;
+          if (screenR >= 6.5) return 1;
           if (mode === 'relationships' && (d.ticker === focusTicker || relatedTickers?.has(d.ticker))) {
-            return screenR >= 5 ? 1 : 0;
+            return screenR >= 4 ? 1 : 0;
           }
-          // Large bubbles always labeled even when zoomed out
-          if (d.r >= 14) return 0.95;
+          // Mid/large bubbles stay labeled even when zoomed out
+          if (d.r >= 9) return 0.95;
           return 0;
         });
     }
@@ -238,7 +241,7 @@ export function BubbleMap({
           .attr('y1', (d) => d.focus.y ?? 0)
           .attr('x2', (d) => d.other!.x ?? 0)
           .attr('y2', (d) => d.other!.y ?? 0)
-          .attr('stroke', 'rgba(61,214,198,0.55)')
+          .attr('stroke', 'rgba(255,36,0,0.45)')
           .attr('stroke-width', 1.4);
       } else {
         linkLayer.selectAll('line').remove();
@@ -255,9 +258,9 @@ export function BubbleMap({
           .attr('x', w / 2 + Math.cos(a) * radius)
           .attr('y', h / 2 + Math.sin(a) * radius)
           .attr('text-anchor', 'middle')
-          .attr('fill', 'rgba(122,135,153,0.85)')
+          .attr('fill', 'rgba(90,98,112,0.9)')
           .attr('font-size', 11)
-          .attr('font-family', 'IBM Plex Mono, monospace')
+          .attr('font-family', 'JetBrains Mono, monospace')
           .text(s.replace('Consumer ', 'Cons. ').replace('Communication ', 'Comm. '));
       });
     }
@@ -268,22 +271,31 @@ export function BubbleMap({
   }, [prepared, dims, mode, colorByChange, focusTicker, relatedTickers, rateSensitivity, navigate, onSelect]);
 
   return (
-    <div className="relative h-full min-h-[560px] flex flex-col" ref={wrapRef}>
-      <div className="absolute top-3 right-3 z-10 flex flex-wrap gap-2 justify-end">
+    <div className={`relative h-full flex flex-col ${bare ? 'min-h-0' : 'min-h-[560px]'}`} ref={wrapRef}>
+      <div
+        className={`absolute z-10 flex flex-wrap gap-2 ${
+          bare ? 'bottom-[7.5rem] left-4 md:left-6 lg:left-8' : 'top-3 right-3 justify-end'
+        }`}
+      >
         <button
           type="button"
           onClick={() => setColorByChange((v) => !v)}
-          className="font-mono text-[11px] uppercase tracking-wider px-3 py-1.5 border border-terminal-border bg-terminal-panel/90 hover:border-terminal-accent text-terminal-muted hover:text-terminal-accent transition-colors"
+          className="btn-ghost bg-terminal-panel/90 backdrop-blur-sm"
         >
           Color: {colorByChange ? 'Change' : 'Sector'}
         </button>
       </div>
       <svg ref={svgRef} className="w-full flex-1 touch-none" />
-      <p className="px-4 pb-2 text-[11px] font-mono text-terminal-muted">
-        Scroll to zoom (labels appear as you zoom in) · drag to pan · click a bubble
-        {mode === 'relationships' ? ' to map its connections · click again to open detail' : ' for company detail'}
-        {' '}· size = market cap
-      </p>
+      {!bare && (
+        <p className="px-4 pb-2 text-[11px] font-mono text-terminal-muted">
+          Scroll to zoom · drag to pan · click a bubble
+          {mode === 'relationships'
+            ? ' to map its connections · click again to open detail'
+            : ' for company detail'}
+          {' '}
+          · size = market cap
+        </p>
+      )}
     </div>
   );
 }

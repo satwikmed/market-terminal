@@ -36,7 +36,7 @@ export function MoveAnalysis({ ticker }: Props) {
 
   if (!data) {
     return (
-      <section className="border border-terminal-border bg-terminal-panel/30 p-4">
+      <section className="panel-plain p-4">
         <h3 className="font-mono text-[10px] uppercase tracking-[0.16em] text-terminal-accent">
           Why did this move?
         </h3>
@@ -49,7 +49,7 @@ export function MoveAnalysis({ ticker }: Props) {
   const shown = aiNarrative ?? data;
 
   return (
-    <section className="border border-terminal-border bg-terminal-panel/30 p-4">
+    <section className="panel-plain p-4">
       <div className="flex items-baseline justify-between gap-3 flex-wrap">
         <h3 className="font-mono text-[10px] uppercase tracking-[0.16em] text-terminal-accent">
           Why did this move?
@@ -63,21 +63,21 @@ export function MoveAnalysis({ ticker }: Props) {
         <div className="mt-3">
           <div className="flex h-6 w-full overflow-hidden border border-terminal-border font-mono text-[9px]">
             <div
-              className="bg-terminal-accent/70 grid place-items-center text-terminal-bg"
+              className="bg-[#c5c9d2] grid place-items-center text-terminal-text"
               style={{ width: `${attribution.shares.market}%` }}
               title={`Market: ${attribution.market_pct.toFixed(2)}%`}
             >
               {attribution.shares.market >= 12 ? `MKT ${attribution.shares.market}%` : ''}
             </div>
             <div
-              className="bg-terminal-warn/70 grid place-items-center text-terminal-bg"
+              className="bg-[#e9a820] grid place-items-center text-terminal-text"
               style={{ width: `${attribution.shares.sector}%` }}
               title={`Industry: ${attribution.sector_excess_pct.toFixed(2)}%`}
             >
               {attribution.shares.sector >= 12 ? `IND ${attribution.shares.sector}%` : ''}
             </div>
             <div
-              className="bg-terminal-text/50 grid place-items-center text-terminal-bg"
+              className="bg-terminal-accent grid place-items-center text-white"
               style={{ width: `${attribution.shares.company}%` }}
               title={`Company-specific: ${attribution.company_specific_pct.toFixed(2)}%`}
             >

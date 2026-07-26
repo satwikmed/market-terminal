@@ -152,6 +152,97 @@ export type SystemStatus = {
   };
 };
 
+export type FinancialStatements = {
+  income: { revenue: (number | null)[]; gross_profit: (number | null)[]; operating_income: (number | null)[]; net_income: (number | null)[]; rnd: (number | null)[]; eps_diluted: (number | null)[] };
+  balance: { total_assets: (number | null)[]; total_liabilities: (number | null)[]; total_equity: (number | null)[]; cash: (number | null)[]; long_term_debt: (number | null)[] };
+  cashflow: { operating_cash_flow: (number | null)[]; capital_expenditure: (number | null)[]; free_cash_flow: (number | null)[] };
+};
+
+export type Financials = {
+  ticker: string;
+  company_name: string;
+  fiscal_years: number[];
+  latest_fiscal_year: number;
+  currency: string;
+  statements: FinancialStatements;
+  ratios: Record<string, number | null>;
+  peer_context: { sector: string; peer_count: number };
+  source: string;
+  source_url: string;
+};
+
+export type RiskMetrics = {
+  ticker: string;
+  as_of: string;
+  observations: number;
+  price: number;
+  annualized_return_pct: number;
+  annualized_volatility_pct: number;
+  sharpe_ratio: number | null;
+  beta: number | null;
+  max_drawdown_pct: number;
+  rsi_14: number | null;
+  sma_50: number | null;
+  sma_200: number | null;
+  ma_cross: 'golden' | 'death' | null;
+  week52_high: number;
+  week52_low: number;
+  pct_from_high: number | null;
+  pct_off_low: number | null;
+  risk_free_pct: number;
+  benchmark: string;
+};
+
+export type LeaderboardRow = {
+  ticker: string;
+  name: string;
+  sector: string;
+  market_cap: number | null;
+  change_pct: number | null;
+  beta: number | null;
+  volatility_pct: number;
+  max_drawdown_pct: number;
+  rsi_14: number | null;
+  return_window_pct: number;
+};
+
+export type ScreenerRow = {
+  ticker: string;
+  name: string;
+  sector: string;
+  industry: string;
+  price: number | null;
+  change_pct: number | null;
+  market_cap: number | null;
+  pe_ratio: number | null;
+  eps: number | null;
+  dividend_yield_pct: number | null;
+  mom_1m_pct: number | null;
+  mom_3m_pct: number | null;
+  mom_6m_pct: number | null;
+};
+
+export type BacktestResult = {
+  start_date: string;
+  end_date: string;
+  trading_days: number;
+  holdings: { ticker: string; weight_pct: number }[];
+  metrics: {
+    total_return_pct: number;
+    cagr_pct: number;
+    annualized_volatility_pct: number;
+    sharpe_ratio: number | null;
+    max_drawdown_pct: number;
+    beta_vs_spy: number | null;
+    benchmark_total_return_pct: number | null;
+    excess_return_pct: number | null;
+  };
+  contributions: { ticker: string; weight_pct: number; return_pct: number; contribution_pct: number }[];
+  curve: { date: string; portfolio: number; benchmark: number | null }[];
+  benchmark: string;
+  note: string;
+};
+
 export const api = {
   health: () => request<{ status: string; market: { label: string; is_live: boolean; state: string } }>('/api/health'),
   tape: () =>
@@ -230,6 +321,19 @@ export const api = {
     request<{ ticker: string; name: string; sector: string; market_cap?: number }[]>(
       `/api/companies${q ? `?q=${encodeURIComponent(q)}` : ''}`,
     ),
+  fundamentals: (ticker: string) => request<Financials>(`/api/fundamentals/${ticker}`),
+  risk: (ticker: string) => request<RiskMetrics>(`/api/quant/${ticker}`),
+  riskLeaderboard: () => request<{ benchmark: string; count: number; rows: LeaderboardRow[] }>('/api/quant/leaderboard'),
+  correlation: (tickers: string[]) =>
+    request<{ tickers: string[]; matrix: (number | null)[][]; observations: number }>(
+      `/api/quant/correlation?tickers=${encodeURIComponent(tickers.join(','))}`,
+    ),
+  screener: () => request<{ count: number; sectors: string[]; rows: ScreenerRow[] }>('/api/screener'),
+  backtest: (holdings: { ticker: string; weight: number }[]) =>
+    request<BacktestResult>('/api/portfolio/backtest', {
+      method: 'POST',
+      body: JSON.stringify({ holdings }),
+    }),
 };
 
 export type MacroDashboard = {

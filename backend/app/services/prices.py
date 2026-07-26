@@ -22,6 +22,9 @@ YF_ALIASES = {
     "BF.B": "BF-B",
 }
 
+# Benchmark index proxy stored alongside company bars for relative metrics.
+BENCHMARK_TICKER = "SPY"
+
 UA_HEADERS = {
     "User-Agent": (
         "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
@@ -368,9 +371,10 @@ async def refresh_universe(
 
     n_bars = 0
     if with_history:
-        # History for all names via chart API (batched politely)
+        # History for all names via chart API (batched politely), plus the SPY
+        # benchmark used for beta, correlation, and portfolio backtests.
         frames: dict[str, pd.DataFrame] = {}
-        for batch in _chunk(tickers, 40):
+        for batch in _chunk([*tickers, BENCHMARK_TICKER], 40):
             frames.update(fetch_history_batch(batch, period=history_period))
         n_bars = await upsert_history(db, frames)
 

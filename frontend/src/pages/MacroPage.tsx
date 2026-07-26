@@ -28,11 +28,12 @@ export function MacroPage() {
   const recession = data.indicators.find((i) => i.id === 'RECESSION_PROB');
 
   return (
-    <div className="space-y-6 fade-up">
-      <div>
-        <h2 className="text-2xl font-semibold tracking-tight">US Economy</h2>
-        <p className="text-sm text-terminal-muted mt-1 max-w-2xl">
-          Macro numbers from FRED-style series, translated into plain English, then connected back to how sectors on the bubble map tend to react.
+    <div className="space-y-8 fade-up">
+      <div className="border-b-2 border-terminal-text pb-5">
+        <p className="font-mono text-[10px] uppercase tracking-[0.28em] text-terminal-accent mb-2">Macro layer</p>
+        <h2 className="brand-mark text-[clamp(2rem,5vw,3.75rem)]">US Economy</h2>
+        <p className="text-base text-terminal-muted mt-3 max-w-2xl leading-snug">
+          Macro numbers from FRED, translated into plain English, then connected back to how sectors on the map tend to react.
         </p>
       </div>
 
@@ -40,7 +41,7 @@ export function MacroPage() {
         {data.indicators
           .filter((i) => i.id !== 'T10Y2Y' && i.id !== 'RECESSION_PROB')
           .map((ind) => (
-            <div key={ind.id} className="border border-terminal-border bg-terminal-panel/30 px-4">
+            <div key={ind.id} className="panel-plain px-4">
               <MetricExplain
                 label={ind.label}
                 value={`${ind.value.toFixed(2)}${ind.unit === '%' ? '%' : ''}`}
@@ -49,7 +50,7 @@ export function MacroPage() {
               <div className="h-20 pb-3">
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart data={ind.history}>
-                    <Line type="monotone" dataKey="value" stroke="#3dd6c6" dot={false} strokeWidth={1.4} />
+                    <Line type="monotone" dataKey="value" stroke="#ff2400" dot={false} strokeWidth={1.4} />
                   </LineChart>
                 </ResponsiveContainer>
               </div>
@@ -58,7 +59,7 @@ export function MacroPage() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <section className="border border-terminal-border bg-terminal-panel/30 p-4">
+        <section className="panel-plain p-4">
           <h3 className="font-mono text-[10px] uppercase tracking-[0.16em] text-terminal-accent">Fed rate tracker</h3>
           <p className="text-3xl font-mono mt-3 tabular-nums">
             Next FOMC · {data.fed.next_fomc}
@@ -84,17 +85,24 @@ export function MacroPage() {
           </p>
         </section>
 
-        <section className="border border-terminal-border bg-terminal-panel/30 p-4">
+        <section className="panel-plain p-4">
           <h3 className="font-mono text-[10px] uppercase tracking-[0.16em] text-terminal-accent">Inflation basket</h3>
           <p className="text-sm text-terminal-muted mt-1">What's actually pushing the CPI number around.</p>
           <div className="h-56 mt-3">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={data.inflation_basket}>
-                <CartesianGrid stroke="rgba(28,37,51,0.9)" vertical={false} />
-                <XAxis dataKey="component" tick={{ fill: '#7a8799', fontSize: 10 }} />
-                <YAxis tick={{ fill: '#7a8799', fontSize: 10 }} unit="%" />
-                <Tooltip contentStyle={{ background: '#0f141c', border: '1px solid #1c2533' }} />
-                <Bar dataKey="value" fill="#f0b429" />
+                <CartesianGrid stroke="rgba(10,11,14,0.08)" vertical={false} />
+                <XAxis dataKey="component" tick={{ fill: '#5a6270', fontSize: 10 }} />
+                <YAxis tick={{ fill: '#5a6270', fontSize: 10 }} unit="%" />
+                <Tooltip
+                  contentStyle={{
+                    background: '#0a0b0e',
+                    border: '1px solid #0a0b0e',
+                    color: '#f3f4f8',
+                    fontFamily: 'JetBrains Mono',
+                  }}
+                />
+                <Bar dataKey="value" fill="#b45309" />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -102,23 +110,30 @@ export function MacroPage() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <section className="border border-terminal-border bg-terminal-panel/30 p-4">
+        <section className="panel-plain p-4">
           <h3 className="font-mono text-[10px] uppercase tracking-[0.16em] text-terminal-accent">Yield curve · 2s10s</h3>
           <div className="h-56 mt-3">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={yieldSeries?.history ?? []}>
-                <CartesianGrid stroke="rgba(28,37,51,0.9)" />
-                <XAxis dataKey="date" tick={{ fill: '#7a8799', fontSize: 10 }} minTickGap={30} />
-                <YAxis tick={{ fill: '#7a8799', fontSize: 10 }} />
-                <Tooltip contentStyle={{ background: '#0f141c', border: '1px solid #1c2533' }} />
-                <Line type="monotone" dataKey="value" stroke="#7aa2f7" dot={false} strokeWidth={1.6} />
+                <CartesianGrid stroke="rgba(10,11,14,0.08)" />
+                <XAxis dataKey="date" tick={{ fill: '#5a6270', fontSize: 10 }} minTickGap={30} />
+                <YAxis tick={{ fill: '#5a6270', fontSize: 10 }} />
+                <Tooltip
+                  contentStyle={{
+                    background: '#0a0b0e',
+                    border: '1px solid #0a0b0e',
+                    color: '#f3f4f8',
+                    fontFamily: 'JetBrains Mono',
+                  }}
+                />
+                <Line type="monotone" dataKey="value" stroke="#0a0b0e" dot={false} strokeWidth={1.6} />
               </LineChart>
             </ResponsiveContainer>
           </div>
           <p className="text-sm text-terminal-muted mt-3 leading-relaxed">{data.yield_curve_note}</p>
         </section>
 
-        <section className="border border-terminal-border bg-terminal-panel/30 p-4">
+        <section className="panel-plain p-4">
           <h3 className="font-mono text-[10px] uppercase tracking-[0.16em] text-terminal-accent">Recession probability</h3>
           <p className="text-4xl font-mono mt-3 tabular-nums text-terminal-warn">
             {recession?.value.toFixed(0) ?? '—'}%
@@ -136,7 +151,7 @@ export function MacroPage() {
         </section>
       </div>
 
-      <section className="border border-terminal-border bg-terminal-panel/30 p-4">
+      <section className="panel-plain p-4">
         <h3 className="font-mono text-[10px] uppercase tracking-[0.16em] text-terminal-accent">
           Sector rate sensitivity · connective tissue
         </h3>
@@ -156,7 +171,7 @@ export function MacroPage() {
       </section>
 
       {data.data_sources && (
-        <section className="border border-terminal-border bg-terminal-panel/30 p-4 text-xs text-terminal-muted">
+        <section className="panel-plain p-4 text-xs text-terminal-muted">
           <h3 className="font-mono text-[10px] uppercase tracking-[0.16em] text-terminal-accent">
             Data provenance
           </h3>

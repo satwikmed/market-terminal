@@ -11,8 +11,10 @@ import {
   ReferenceLine,
 } from 'recharts';
 import { FilingsPanel } from '../components/FilingsPanel';
+import { FinancialsSection } from '../components/FinancialsSection';
 import { MetricExplain } from '../components/MetricExplain';
 import { MoveAnalysis } from '../components/MoveAnalysis';
+import { RiskPanel } from '../components/RiskPanel';
 import {
   api,
   formatMoney,
@@ -101,7 +103,7 @@ export function CompanyPage() {
       <div className="py-20 text-center font-mono text-terminal-muted">
         Loading {ticker.toUpperCase()}… or ticker not in S&P 500 universe.
         <div className="mt-4">
-          <Link to="/" className="text-terminal-accent">
+          <Link to="/map" className="text-terminal-accent">
             ← Back to map
           </Link>
         </div>
@@ -112,30 +114,35 @@ export function CompanyPage() {
   const up = (company.change_pct ?? 0) >= 0;
 
   return (
-    <div className="space-y-6 fade-up">
-      <div className="flex flex-wrap items-end justify-between gap-4 border-b border-terminal-border pb-4">
+    <div className="space-y-8 fade-up">
+      <div className="flex flex-wrap items-end justify-between gap-4 border-b-2 border-terminal-text pb-5">
         <div>
-          <Link to="/" className="font-mono text-[11px] text-terminal-muted hover:text-terminal-accent uppercase tracking-wider">
-            ← Bubble map
+          <Link
+            to="/map"
+            className="font-mono text-[11px] text-terminal-muted hover:text-terminal-accent uppercase tracking-[0.14em]"
+          >
+            ← Map
           </Link>
-          <h2 className="text-3xl font-semibold mt-2 tracking-tight">
-            <span className="font-mono text-terminal-accent mr-3">{company.ticker}</span>
-            {company.name}
+          <h2 className="brand-mark text-[clamp(2rem,5vw,3.5rem)] mt-3">
+            <span className="text-terminal-accent">{company.ticker}</span>{' '}
+            <span className="text-terminal-text">{company.name}</span>
           </h2>
-          <p className="text-sm text-terminal-muted mt-1">
+          <p className="text-sm text-terminal-muted mt-2 font-mono uppercase tracking-wider">
             {company.sector} · {company.industry}
           </p>
         </div>
-        <div className="text-right font-mono">
-          <div className="text-3xl tabular-nums">${company.price?.toFixed(2) ?? '—'}</div>
-          <div className={`text-sm ${up ? 'text-up' : 'text-down'}`}>
+        <div className="text-right">
+          <div className="font-mono text-4xl tabular-nums tracking-tight">
+            ${company.price?.toFixed(2) ?? '—'}
+          </div>
+          <div className={`font-mono text-sm mt-1 ${up ? 'text-up' : 'text-down'}`}>
             {formatPct(company.change_pct)} · {company.quote_label}
           </div>
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 border border-terminal-border bg-terminal-panel/30 p-4">
+        <div className="lg:col-span-2 panel-plain p-4">
           <h3 className="font-mono text-[10px] uppercase tracking-[0.16em] text-terminal-muted mb-3">
             Price · with macro event markers
           </h3>
@@ -147,13 +154,18 @@ export function CompanyPage() {
             ) : (
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={history}>
-                  <CartesianGrid stroke="rgba(28,37,51,0.9)" />
-                  <XAxis dataKey="date" tick={{ fill: '#7a8799', fontSize: 10 }} minTickGap={40} />
-                  <YAxis domain={['auto', 'auto']} tick={{ fill: '#7a8799', fontSize: 10 }} width={48} />
+                  <CartesianGrid stroke="rgba(10,11,14,0.08)" />
+                  <XAxis dataKey="date" tick={{ fill: '#5a6270', fontSize: 10 }} minTickGap={40} />
+                  <YAxis domain={['auto', 'auto']} tick={{ fill: '#5a6270', fontSize: 10 }} width={48} />
                   <Tooltip
-                    contentStyle={{ background: '#0f141c', border: '1px solid #1c2533', fontFamily: 'IBM Plex Mono' }}
+                    contentStyle={{
+                      background: '#0a0b0e',
+                      border: '1px solid #0a0b0e',
+                      color: '#f3f4f8',
+                      fontFamily: 'JetBrains Mono',
+                    }}
                   />
-                  <Line type="monotone" dataKey="close" stroke="#3dd6c6" dot={false} strokeWidth={1.6} />
+                  <Line type="monotone" dataKey="close" stroke="#ff2400" dot={false} strokeWidth={1.8} />
                   {events
                     .filter((e) => history.some((h) => h.date >= e.date))
                     .slice(0, 4)
@@ -161,9 +173,9 @@ export function CompanyPage() {
                       <ReferenceLine
                         key={e.date + e.title}
                         x={e.date}
-                        stroke="#f0b429"
+                        stroke="#b45309"
                         strokeDasharray="3 3"
-                        label={{ value: e.title.split(' ')[0], fill: '#f0b429', fontSize: 9 }}
+                        label={{ value: e.title.split(' ')[0], fill: '#b45309', fontSize: 9 }}
                       />
                     ))}
                 </LineChart>
@@ -171,12 +183,14 @@ export function CompanyPage() {
             )}
           </div>
           <p className="text-xs text-terminal-muted mt-2">
-            Yellow dashed lines mark major economic releases so you can visually connect macro news to price action.
+            Dashed lines mark major economic releases so you can visually connect macro news to price action.
           </p>
         </div>
 
-        <div className="border border-terminal-border bg-terminal-panel/30 p-4">
-          <h3 className="font-mono text-[10px] uppercase tracking-[0.16em] text-terminal-accent">Explain like I'm 5</h3>
+        <div className="panel-plain p-4">
+          <h3 className="font-mono text-[10px] uppercase tracking-[0.16em] text-terminal-accent">
+            Explain like I&apos;m 5
+          </h3>
           {company.metrics.map((m) => (
             <MetricExplain key={m.metric} label={m.metric} value={m.value_display} plainEnglish={m.plain_english} />
           ))}
@@ -184,7 +198,7 @@ export function CompanyPage() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <section className="border border-terminal-border bg-terminal-panel/30 p-4">
+        <section className="panel-plain p-4">
           <div className="flex items-center justify-between gap-3">
             <h3 className="font-mono text-[10px] uppercase tracking-[0.16em] text-terminal-accent">Analogy engine</h3>
             <button
@@ -210,7 +224,7 @@ export function CompanyPage() {
           </ul>
         </section>
 
-        <section className="border border-terminal-border bg-terminal-panel/30 p-4">
+        <section className="panel-plain p-4">
           <h3 className="font-mono text-[10px] uppercase tracking-[0.16em] text-terminal-accent">Business relationships</h3>
           <ul className="mt-3 space-y-3 max-h-64 overflow-auto">
             {rels.length === 0 && <li className="text-sm text-terminal-muted">Curated coverage expanding — major names first.</li>}
@@ -227,13 +241,17 @@ export function CompanyPage() {
         </section>
       </div>
 
+      <RiskPanel ticker={company.ticker} />
+
+      <FinancialsSection ticker={company.ticker} />
+
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <MoveAnalysis ticker={company.ticker} />
         <FilingsPanel ticker={company.ticker} />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <section className="border border-terminal-border bg-terminal-panel/30 p-4">
+        <section className="panel-plain p-4">
           <h3 className="font-mono text-[10px] uppercase tracking-[0.16em] text-terminal-accent">
             Earnings, explained
           </h3>
@@ -276,7 +294,7 @@ export function CompanyPage() {
           )}
         </section>
 
-        <section className="border border-terminal-border bg-terminal-panel/30 p-4">
+        <section className="panel-plain p-4">
           <h3 className="font-mono text-[10px] uppercase tracking-[0.16em] text-terminal-accent">Institutional ownership</h3>
           {ownershipSource && (
             <p className="mt-2 text-[10px] font-mono text-terminal-muted">{ownershipSource}</p>
@@ -297,7 +315,7 @@ export function CompanyPage() {
           </ul>
         </section>
 
-        <section className="border border-terminal-border bg-terminal-panel/30 p-4">
+        <section className="panel-plain p-4">
           <h3 className="font-mono text-[10px] uppercase tracking-[0.16em] text-terminal-accent">Insider activity</h3>
           {insiderSource && (
             <p className="mt-2 text-[10px] font-mono text-terminal-muted">{insiderSource}</p>

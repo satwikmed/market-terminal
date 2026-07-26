@@ -8,7 +8,14 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import get_settings
 from app.database import get_db
-from app.models.entities import Company, EconomicEvent, MacroObservation, PriceBar, QuoteSnapshot
+from app.models.entities import (
+    Company,
+    EconomicEvent,
+    FinancialsCache,
+    MacroObservation,
+    PriceBar,
+    QuoteSnapshot,
+)
 from app.services import sec_filings
 from app.services.market_hours import get_market_session
 from app.services.scheduler import scheduler_status
@@ -40,6 +47,9 @@ async def status(db: AsyncSession = Depends(get_db)):
         await db.execute(
             select(func.count()).select_from(Company).where(Company.pe_ratio.isnot(None))
         )
+    ).scalar_one()
+    financials_cached = (
+        await db.execute(select(func.count()).select_from(FinancialsCache))
     ).scalar_one()
 
     provider = settings.resolved_ai_provider
@@ -73,7 +83,18 @@ async def status(db: AsyncSession = Depends(get_db)):
                 "status": "live" if bars else "empty",
                 "records": bars,
                 "last_updated": newest_bar.isoformat() if newest_bar else None,
-                "notes": "Six months of daily bars per company, refreshed after the close.",
+                "notes": "Two years of daily bars per company, plus the SPY benchmark, refreshed after the close. Powers all risk, correlation, and backtest math.",
+            },
+            {
+                "id": "fundamentals",
+                "label": "Financial statements & ratios",
+                "provider": "SEC EDGAR XBRL company facts",
+                "status": "live" if financials_cached else "on demand",
+                "records": financials_cached,
+                "notes": (
+                    f"{financials_cached} companies have parsed income, balance-sheet, and cash-flow "
+                    "statements plus 12 computed ratios, straight from filings — no estimates."
+                ),
             },
             {
                 "id": "filings",
