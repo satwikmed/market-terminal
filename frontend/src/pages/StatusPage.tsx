@@ -54,15 +54,31 @@ export function StatusPage() {
         </div>
       </div>
 
-      {status.initial_load && ['pending', 'running'].includes(status.initial_load.state) && (
-        <div className="border border-terminal-warn/50 bg-terminal-warn/5 p-4">
-          <div className="font-mono text-[10px] uppercase tracking-wider text-terminal-warn">
-            First-time data load in progress
+      {status.initial_load &&
+        ['pending', 'running', 'retrying'].includes(status.initial_load.state) && (
+          <div className="border border-terminal-warn/50 bg-terminal-warn/5 p-4">
+            <div className="font-mono text-[10px] uppercase tracking-wider text-terminal-warn">
+              {status.initial_load.state === 'retrying'
+                ? 'Data load retrying'
+                : 'First-time data load in progress'}
+            </div>
+            <p className="text-sm text-terminal-muted mt-2 leading-relaxed">
+              {status.initial_load.state === 'retrying'
+                ? 'The market data provider is rate-limiting this instance. The load backs off and retries automatically; existing numbers stay as they are in the meantime.'
+                : 'This instance is populating its database from scratch — 503 companies of quotes, fundamentals, and two years of daily price history. It takes a few minutes. Numbers will fill in as it goes; refresh this page to check on it.'}
+            </p>
+          </div>
+        )}
+
+      {status.initial_load?.state === 'degraded' && (
+        <div className="border border-down/50 bg-down/5 p-4">
+          <div className="font-mono text-[10px] uppercase tracking-wider text-down">
+            Live feed unavailable
           </div>
           <p className="text-sm text-terminal-muted mt-2 leading-relaxed">
-            This instance is populating its database from scratch — 503 companies of quotes,
-            fundamentals, and six months of price history. It takes a few minutes. Numbers will fill
-            in as it goes; refresh this page to check on it.
+            This instance could not reach the market data provider, so prices below may be stale.
+            Nothing shown is estimated or synthetic — figures are whatever was last successfully
+            fetched, and the scheduler keeps retrying.
           </p>
         </div>
       )}
