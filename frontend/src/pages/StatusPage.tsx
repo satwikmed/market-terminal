@@ -53,6 +53,19 @@ export function StatusPage() {
         </div>
       </div>
 
+      {status.initial_load && ['pending', 'running'].includes(status.initial_load.state) && (
+        <div className="border border-terminal-warn/50 bg-terminal-warn/5 p-4">
+          <div className="font-mono text-[10px] uppercase tracking-wider text-terminal-warn">
+            First-time data load in progress
+          </div>
+          <p className="text-sm text-terminal-muted mt-2 leading-relaxed">
+            This instance is populating its database from scratch — 503 companies of quotes,
+            fundamentals, and six months of price history. It takes a few minutes. Numbers will fill
+            in as it goes; refresh this page to check on it.
+          </p>
+        </div>
+      )}
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {status.sources.map((s) => (
           <section key={s.id} className="border border-terminal-border bg-terminal-panel/30 p-4">

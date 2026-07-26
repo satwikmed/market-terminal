@@ -132,6 +132,7 @@ export type SystemStatus = {
   server_time: string;
   market: { state: string; label: string; is_live: boolean };
   mode: string;
+  initial_load?: { state: string; detail: unknown };
   sources: {
     id: string;
     label: string;

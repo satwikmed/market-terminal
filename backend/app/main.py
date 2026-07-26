@@ -1,3 +1,4 @@
+import asyncio
 import logging
 from contextlib import asynccontextmanager
 
@@ -26,14 +27,38 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name
 logger = logging.getLogger("app.startup")
 
 
-async def _bootstrap_market_data(db) -> None:
+BOOTSTRAP: dict[str, object] = {"state": "pending", "detail": None}
+
+
+async def _full_refresh() -> None:
+    """Pull the whole universe. Slow (minutes), so it never blocks startup."""
+    BOOTSTRAP.update(state="running", detail="fetching quotes, fundamentals, and history")
+    from app.services.prices import refresh_universe
+
+    try:
+        async with SessionLocal() as db:
+            result = await refresh_universe(
+                db, with_fundamentals=True, with_history=True, history_period="6mo"
+            )
+        BOOTSTRAP.update(state="complete", detail=result)
+        logger.info("initial market load complete: %s", result)
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("initial market load failed (%s); seeding synthetic quotes", exc)
+        try:
+            async with SessionLocal() as db:
+                await seed_quotes(db)
+            BOOTSTRAP.update(state="fallback", detail=str(exc))
+        except Exception as seed_exc:  # noqa: BLE001
+            BOOTSTRAP.update(state="failed", detail=str(seed_exc))
+
+
+async def _plan_market_bootstrap(db) -> bool:
+    """Decide whether a full refresh is needed. Returns True if one should run."""
     settings = get_settings()
     if settings.demo_mode:
         await seed_quotes(db)
-        logger.info("demo mode: seeded synthetic quotes")
-        return
-
-    from app.services.prices import refresh_universe
+        BOOTSTRAP.update(state="complete", detail="demo mode: synthetic quotes")
+        return False
 
     # Synthetic seed prices were typically under $100, so a realistic mega-cap
     # price is a reliable signal that the cached quotes came from the live feed.
@@ -43,20 +68,15 @@ async def _bootstrap_market_data(db) -> None:
     existing = (await db.execute(select(func.count()).select_from(QuoteSnapshot))).scalar_one()
     if aapl and aapl.price > 100 and existing >= 400:
         logger.info("using cached live quotes (AAPL=$%.2f, n=%s)", aapl.price, existing)
-        return
+        BOOTSTRAP.update(state="complete", detail=f"{existing} cached live quotes")
+        return False
 
     if not settings.startup_refresh:
         logger.info("startup refresh disabled; leaving %s cached quotes in place", existing)
-        return
+        BOOTSTRAP.update(state="skipped", detail="startup_refresh disabled")
+        return False
 
-    try:
-        result = await refresh_universe(
-            db, with_fundamentals=True, with_history=True, history_period="6mo"
-        )
-        logger.info("full live market refresh: %s", result)
-    except Exception as exc:  # noqa: BLE001
-        logger.warning("live refresh failed (%s); falling back to synthetic quotes", exc)
-        await seed_quotes(db)
+    return True
 
 
 @asynccontextmanager
@@ -72,12 +92,18 @@ async def lifespan(_: FastAPI):
         if macro_count == 0:
             await seed_macro(db)
 
-        await _bootstrap_market_data(db)
+        needs_refresh = await _plan_market_bootstrap(db)
+
+    # Detached so the app can answer health checks immediately. A cold database
+    # takes several minutes to populate, which would otherwise fail the deploy.
+    task = asyncio.create_task(_full_refresh()) if needs_refresh else None
 
     start_scheduler()
     try:
         yield
     finally:
+        if task and not task.done():
+            task.cancel()
         shutdown_scheduler()
 
 
@@ -123,4 +149,5 @@ async def health():
         "app": settings.app_name,
         "market": {"state": session.state, "label": session.label, "is_live": session.is_live},
         "demo_mode": settings.demo_mode,
+        "data_load": BOOTSTRAP["state"],
     }

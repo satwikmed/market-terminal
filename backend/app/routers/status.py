@@ -44,11 +44,14 @@ async def status(db: AsyncSession = Depends(get_db)):
 
     provider = settings.resolved_ai_provider
 
+    from app.main import BOOTSTRAP
+
     return {
         "app": settings.app_name,
         "server_time": datetime.utcnow().isoformat() + "Z",
         "market": {"state": session.state, "label": session.label, "is_live": session.is_live},
         "mode": "demo (synthetic quotes)" if settings.demo_mode else "live",
+        "initial_load": dict(BOOTSTRAP),
         "sources": [
             {
                 "id": "quotes",
