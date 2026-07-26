@@ -8,7 +8,7 @@ from sqlalchemy import func, select
 
 from app.config import get_settings
 from app.database import SessionLocal, init_db
-from app.models.entities import MacroObservation, PriceBar, QuoteSnapshot
+from app.models.entities import Company, MacroObservation, PriceBar, QuoteSnapshot
 from app.routers import (
     admin,
     ai,
@@ -54,7 +54,11 @@ async def _full_refresh(attempts: int = 4) -> None:
         try:
             async with SessionLocal() as db:
                 result = await refresh_universe(
-                    db, with_fundamentals=True, with_history=True, history_period="2y"
+                    db,
+                    with_fundamentals=True,
+                    with_history=True,
+                    history_period="2y",
+                    history_only_missing=True,
                 )
             BOOTSTRAP.update(state="complete", detail=result)
             logger.info("initial market load complete: %s", result)
@@ -73,6 +77,8 @@ async def _full_refresh(attempts: int = 4) -> None:
 
 async def _plan_market_bootstrap(db) -> bool:
     """Decide whether a full refresh is needed. Returns True if one should run."""
+    from app.services.prices import BENCHMARK_TICKER, covered_tickers
+
     settings = get_settings()
     if settings.demo_mode:
         await seed_quotes(db)
@@ -87,15 +93,33 @@ async def _plan_market_bootstrap(db) -> bool:
     existing = (await db.execute(select(func.count()).select_from(QuoteSnapshot))).scalar_one()
     bars = (await db.execute(select(func.count()).select_from(PriceBar))).scalar_one()
     # History powers risk, correlation, and backtests, so cached quotes alone
-    # aren't enough — a deploy that interrupts the first load must retry here.
-    # 503 names × ~500 daily bars ≈ 250k rows; anything far below that means
-    # the history pull never finished.
-    if aapl and aapl.price > 100 and existing >= 400 and bars >= 50_000:
+    # aren't enough — a deploy that interrupts the first load must resume here.
+    # Coverage is measured per ticker, not in total rows: a load that died a
+    # fifth of the way through still leaves a six-figure row count behind.
+    covered = await covered_tickers(db)
+    universe = (await db.execute(select(func.count()).select_from(Company))).scalar_one()
+    history_ready = BENCHMARK_TICKER in covered and len(covered) >= universe * 0.95
+
+    if aapl and aapl.price > 100 and existing >= 400 and history_ready:
         logger.info(
-            "using cached live data (AAPL=$%.2f, quotes=%s, bars=%s)", aapl.price, existing, bars
+            "using cached live data (AAPL=$%.2f, quotes=%s, bars=%s across %s names)",
+            aapl.price,
+            existing,
+            bars,
+            len(covered),
         )
-        BOOTSTRAP.update(state="complete", detail=f"{existing} cached quotes, {bars} bars")
+        BOOTSTRAP.update(
+            state="complete", detail=f"{existing} cached quotes, {bars} bars / {len(covered)} names"
+        )
         return False
+
+    logger.info(
+        "market bootstrap needed: quotes=%s, history covers %s/%s names (SPY=%s)",
+        existing,
+        len(covered),
+        universe,
+        BENCHMARK_TICKER in covered,
+    )
 
     if not settings.startup_refresh:
         logger.info("startup refresh disabled; leaving %s cached quotes in place", existing)

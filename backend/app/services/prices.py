@@ -9,7 +9,7 @@ from typing import Any
 
 import pandas as pd
 from curl_cffi import requests as cffi_requests
-from sqlalchemy import delete, select
+from sqlalchemy import delete, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.entities import Company, PriceBar, QuoteSnapshot
@@ -374,12 +374,31 @@ async def upsert_history(db: AsyncSession, frames: dict[str, pd.DataFrame]) -> i
     return bars
 
 
+MIN_BARS_COVERED = 100
+
+
+async def covered_tickers(db: AsyncSession, min_bars: int = MIN_BARS_COVERED) -> set[str]:
+    """Tickers with enough stored daily bars to support risk and backtest math.
+
+    Counting distinct tickers rather than total rows is what makes an
+    interrupted backfill detectable: 60k rows looks like plenty until you
+    notice it covers only a fifth of the index.
+    """
+    rows = await db.execute(
+        select(PriceBar.ticker)
+        .group_by(PriceBar.ticker)
+        .having(func.count(PriceBar.id) >= min_bars)
+    )
+    return set(rows.scalars().all())
+
+
 async def refresh_universe(
     db: AsyncSession,
     *,
     with_fundamentals: bool = True,
     with_history: bool = True,
     history_period: str = "6mo",
+    history_only_missing: bool = False,
 ) -> dict[str, Any]:
     companies = (await db.execute(select(Company))).scalars().all()
     tickers = [c.ticker for c in companies]
@@ -397,7 +416,14 @@ async def refresh_universe(
         # benchmark used for beta, correlation, and portfolio backtests.
         # Each batch is committed as it arrives so a mid-run rate limit or a
         # redeploy leaves the bars already fetched intact.
-        for batch in _chunk([*tickers, BENCHMARK_TICKER], 40):
+        wanted = [*tickers, BENCHMARK_TICKER]
+        if history_only_missing:
+            # Resuming an interrupted backfill: only fetch names still missing
+            # history, so a restart costs minutes rather than starting over.
+            done = await covered_tickers(db)
+            wanted = [t for t in wanted if t not in done]
+            logger.info("resuming history: %s of %s names still missing", len(wanted), len(tickers) + 1)
+        for batch in _chunk(wanted, 40):
             try:
                 frames = fetch_history_batch(batch, period=history_period)
                 n_bars += await upsert_history(db, frames)
