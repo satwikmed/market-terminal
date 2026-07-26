@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
+import { SignalAtmosphere } from '../components/SignalAtmosphere';
 
 const layers = [
   {
@@ -118,16 +119,17 @@ export function LandingPage() {
 
       <main className="flex-1 w-full">
         {/* Hero band */}
-        <section className="relative border-b-2 border-terminal-text overflow-hidden">
+        <section className="relative border-b-2 border-terminal-text overflow-hidden min-h-[72vh] flex items-center">
+          <SignalAtmosphere intensity="hero" />
           <div
-            className="absolute inset-y-0 right-0 w-1/2 max-w-xl opacity-[0.07] pointer-events-none hidden lg:block"
+            className="absolute inset-y-0 right-0 w-1/2 max-w-xl opacity-[0.06] pointer-events-none hidden lg:block z-[1]"
             aria-hidden
             style={{
               backgroundImage:
                 'repeating-linear-gradient(90deg, #0a0b0e 0 1px, transparent 1px 28px), repeating-linear-gradient(0deg, #0a0b0e 0 1px, transparent 1px 28px)',
             }}
           />
-          <div className="max-w-5xl mx-auto px-5 md:px-8 py-12 md:py-16 stamp-in">
+          <div className="relative z-10 max-w-5xl mx-auto px-5 md:px-8 py-14 md:py-20 stamp-in w-full">
             <p className="chapter-num">What we built</p>
             <h1 className="brand-mark mt-3 text-[clamp(2.75rem,8vw,5.75rem)] text-terminal-text max-w-4xl">
               A market terminal
@@ -142,6 +144,15 @@ export function LandingPage() {
               on the back. The point isn’t denser charts — it’s making every number, filing, and price
               move readable without faking data to look smarter.
             </p>
+            <div className="mt-8 flex flex-wrap items-center gap-3">
+              <Link to="/map" className="btn-signal inline-flex items-center gap-2">
+                Enter the map
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+              <Link to="/risk" className="btn-ghost inline-flex items-center gap-2">
+                Open the risk lab
+              </Link>
+            </div>
             <blockquote className="mt-10 max-w-xl border-l-4 border-terminal-accent pl-5 py-1">
               <p className="text-base md:text-lg text-terminal-text leading-snug font-medium tracking-tight">
                 “Show me what’s real, tell me what it means, and never invent a cause you can’t

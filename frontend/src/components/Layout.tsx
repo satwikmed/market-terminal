@@ -1,4 +1,5 @@
 import { NavLink, Outlet, useLocation } from 'react-router-dom';
+import { SignalAtmosphere } from './SignalAtmosphere';
 import { TickerTape } from './TickerTape';
 
 const links = [
@@ -17,7 +18,15 @@ export function Layout() {
   const isMap = pathname === '/map';
 
   return (
-    <div className={`min-h-full terminal-grid flex flex-col ${isMap ? 'h-dvh overflow-hidden' : ''}`}>
+    <div
+      className={`relative min-h-full terminal-grid flex flex-col ${isMap ? 'h-dvh overflow-hidden' : ''}`}
+    >
+      {!isMap && (
+        <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden" aria-hidden>
+          <SignalAtmosphere intensity="whisper" />
+        </div>
+      )}
+
       <header className="relative z-40 shrink-0">
         <div className="flex flex-col sm:flex-row sm:items-stretch border-b-2 border-terminal-text">
           <NavLink
@@ -32,7 +41,7 @@ export function Layout() {
             </span>
           </NavLink>
 
-          <div className="flex-1 flex flex-wrap items-center justify-between gap-3 px-4 md:px-6 py-3 bg-terminal-panel">
+          <div className="flex-1 flex flex-wrap items-center justify-between gap-3 px-4 md:px-6 py-3 bg-terminal-panel/90 backdrop-blur-[2px]">
             <p className="hidden md:block text-sm text-terminal-muted max-w-md leading-snug">
               Map · filings · macro — explained without jargon. Public sources, plainly labeled.
             </p>
@@ -59,12 +68,14 @@ export function Layout() {
         <TickerTape />
       </header>
 
-      <main className={`flex-1 w-full ${isMap ? 'min-h-0 relative' : 'max-w-[1600px] mx-auto px-4 md:px-6 py-6'}`}>
+      <main
+        className={`relative z-10 flex-1 w-full ${isMap ? 'min-h-0 relative' : 'max-w-[1600px] mx-auto px-4 md:px-6 py-6'}`}
+      >
         <Outlet />
       </main>
 
       {!isMap && (
-        <footer className="border-t-2 border-terminal-text py-3 px-4 md:px-6 font-mono text-[11px] text-terminal-muted flex flex-wrap gap-x-4 gap-y-1 justify-between max-w-[1600px] mx-auto w-full">
+        <footer className="relative z-10 border-t-2 border-terminal-text py-3 px-4 md:px-6 font-mono text-[11px] text-terminal-muted flex flex-wrap gap-x-4 gap-y-1 justify-between max-w-[1600px] mx-auto w-full">
           <span>
             Done by{' '}
             <a
