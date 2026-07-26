@@ -26,6 +26,8 @@ class Settings(BaseSettings):
     enable_scheduler: bool = True
     quote_refresh_minutes: int = 10
     startup_refresh: bool = True
+    # Shared secret for the manual data-refresh endpoint. Blank disables it.
+    admin_token: str = ""
 
     @property
     def cors_origin_list(self) -> list[str]:

@@ -48,18 +48,39 @@ class YahooSession:
         self.session = cffi_requests.Session(impersonate="chrome")
         self.crumb: str | None = None
 
-    def warm(self) -> None:
-        self.session.get("https://finance.yahoo.com/", headers=UA_HEADERS, timeout=30)
-        r = self.session.get(
-            "https://query1.finance.yahoo.com/v1/test/getcrumb",
-            headers=UA_HEADERS,
-            timeout=30,
-        )
-        if r.status_code != 200:
-            raise RuntimeError(f"Failed to get Yahoo crumb: {r.status_code} {r.text[:120]}")
-        self.crumb = r.text.strip()
-        if not self.crumb or "<" in self.crumb:
-            raise RuntimeError(f"Invalid Yahoo crumb: {self.crumb!r}")
+    def warm(self, attempts: int = 5) -> None:
+        """Establish a crumbed session, backing off through Yahoo's rate limiting.
+
+        A cold deploy often gets 429s on the first few tries because the host IP
+        is shared, so a single failure must not abort the whole market load.
+        """
+        last: str | None = None
+        for attempt in range(attempts):
+            if attempt:
+                # 3s, 9s, 27s, 81s — long enough for a shared-IP 429 to clear.
+                time.sleep(min(3 ** attempt, 90))
+                self.session = cffi_requests.Session(impersonate="chrome")
+            try:
+                self.session.get("https://finance.yahoo.com/", headers=UA_HEADERS, timeout=30)
+                r = self.session.get(
+                    "https://query1.finance.yahoo.com/v1/test/getcrumb",
+                    headers=UA_HEADERS,
+                    timeout=30,
+                )
+            except Exception as exc:  # noqa: BLE001
+                last = f"{type(exc).__name__}: {exc}"
+                continue
+            if r.status_code != 200:
+                last = f"{r.status_code} {r.text[:120]}"
+                logger.warning("Yahoo crumb attempt %s failed: %s", attempt + 1, last)
+                continue
+            crumb = r.text.strip()
+            if not crumb or "<" in crumb:
+                last = f"invalid crumb {crumb!r}"
+                continue
+            self.crumb = crumb
+            return
+        raise RuntimeError(f"Failed to get Yahoo crumb after {attempts} attempts: {last}")
 
     def quote_batch(self, tickers: list[str]) -> list[dict[str, Any]]:
         if not self.crumb:
@@ -370,13 +391,19 @@ async def refresh_universe(
     n_funds = await apply_fundamentals(db, fundamentals) if with_fundamentals else 0
 
     n_bars = 0
+    failed_batches = 0
     if with_history:
         # History for all names via chart API (batched politely), plus the SPY
         # benchmark used for beta, correlation, and portfolio backtests.
-        frames: dict[str, pd.DataFrame] = {}
+        # Each batch is committed as it arrives so a mid-run rate limit or a
+        # redeploy leaves the bars already fetched intact.
         for batch in _chunk([*tickers, BENCHMARK_TICKER], 40):
-            frames.update(fetch_history_batch(batch, period=history_period))
-        n_bars = await upsert_history(db, frames)
+            try:
+                frames = fetch_history_batch(batch, period=history_period)
+                n_bars += await upsert_history(db, frames)
+            except Exception as exc:  # noqa: BLE001
+                failed_batches += 1
+                logger.warning("history batch failed (%s); continuing", exc)
 
     session = get_market_session()
     sample = {t: quotes[t] for t in ("AAPL", "MSFT", "NVDA", "AMZN", "GOOGL", "ACN") if t in quotes}
@@ -385,6 +412,7 @@ async def refresh_universe(
         "quotes": n_quotes,
         "fundamentals": n_funds,
         "history_bars": n_bars,
+        "failed_history_batches": failed_batches,
         "session": session.label,
         "sample": sample,
         "sample_market_caps": {

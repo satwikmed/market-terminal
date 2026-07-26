@@ -10,6 +10,7 @@ from app.config import get_settings
 from app.database import SessionLocal, init_db
 from app.models.entities import MacroObservation, PriceBar, QuoteSnapshot
 from app.routers import (
+    admin,
     ai,
     bubble,
     companies,
@@ -34,26 +35,40 @@ logger = logging.getLogger("app.startup")
 BOOTSTRAP: dict[str, object] = {"state": "pending", "detail": None}
 
 
-async def _full_refresh() -> None:
-    """Pull the whole universe. Slow (minutes), so it never blocks startup."""
-    BOOTSTRAP.update(state="running", detail="fetching quotes, fundamentals, and history")
+async def _full_refresh(attempts: int = 4) -> None:
+    """Pull the whole universe. Slow (minutes), so it never blocks startup.
+
+    Yahoo rate-limits shared cloud IPs, so a cold deploy routinely gets a 429 on
+    the first try. We retry with backoff rather than giving up, and we never
+    substitute synthetic prices for real ones: showing stale-but-real data (or
+    nothing) is the whole premise of the product.
+    """
     from app.services.prices import refresh_universe
 
-    try:
-        async with SessionLocal() as db:
-            result = await refresh_universe(
-                db, with_fundamentals=True, with_history=True, history_period="2y"
-            )
-        BOOTSTRAP.update(state="complete", detail=result)
-        logger.info("initial market load complete: %s", result)
-    except Exception as exc:  # noqa: BLE001
-        logger.warning("initial market load failed (%s); seeding synthetic quotes", exc)
+    last_error: str | None = None
+    for attempt in range(1, attempts + 1):
+        BOOTSTRAP.update(
+            state="running",
+            detail=f"fetching quotes, fundamentals, and history (attempt {attempt}/{attempts})",
+        )
         try:
             async with SessionLocal() as db:
-                await seed_quotes(db)
-            BOOTSTRAP.update(state="fallback", detail=str(exc))
-        except Exception as seed_exc:  # noqa: BLE001
-            BOOTSTRAP.update(state="failed", detail=str(seed_exc))
+                result = await refresh_universe(
+                    db, with_fundamentals=True, with_history=True, history_period="2y"
+                )
+            BOOTSTRAP.update(state="complete", detail=result)
+            logger.info("initial market load complete: %s", result)
+            return
+        except Exception as exc:  # noqa: BLE001
+            last_error = str(exc)
+            logger.warning("market load attempt %s/%s failed: %s", attempt, attempts, exc)
+            if attempt < attempts:
+                delay = min(60 * attempt, 300)
+                BOOTSTRAP.update(state="retrying", detail=f"{last_error} — retrying in {delay}s")
+                await asyncio.sleep(delay)
+
+    BOOTSTRAP.update(state="degraded", detail=f"live market feed unavailable: {last_error}")
+    logger.error("market load failed after %s attempts: %s", attempts, last_error)
 
 
 async def _plan_market_bootstrap(db) -> bool:
@@ -151,6 +166,7 @@ app.include_router(fundamentals.router)
 app.include_router(quant.router)
 app.include_router(screener.router)
 app.include_router(portfolio.router)
+app.include_router(admin.router)
 app.include_router(status.router)
 
 
