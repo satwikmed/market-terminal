@@ -1,0 +1,9 @@
+{
+  "name": "plain-english-terminal",
+  "private": true,
+  "scripts": {
+    "dev:web": "npm --prefix frontend run dev",
+    "dev:api": "cd backend && .venv/bin/uvicorn app.main:app --reload --port 8000",
+    "build:web": "npm --prefix frontend run build"
+  }
+}

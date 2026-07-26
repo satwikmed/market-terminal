@@ -1,0 +1,146 @@
+{
+  "series": {
+    "CPIAUCSL_YOY": [
+      {"date": "2024-01-01", "value": 3.1},
+      {"date": "2024-04-01", "value": 3.4},
+      {"date": "2024-07-01", "value": 2.9},
+      {"date": "2024-10-01", "value": 2.6},
+      {"date": "2025-01-01", "value": 3.0},
+      {"date": "2025-04-01", "value": 2.4},
+      {"date": "2025-07-01", "value": 2.7}
+    ],
+    "UNRATE": [
+      {"date": "2024-01-01", "value": 3.7},
+      {"date": "2024-04-01", "value": 3.9},
+      {"date": "2024-07-01", "value": 4.3},
+      {"date": "2024-10-01", "value": 4.1},
+      {"date": "2025-01-01", "value": 4.0},
+      {"date": "2025-04-01", "value": 4.2},
+      {"date": "2025-07-01", "value": 4.1}
+    ],
+    "FEDFUNDS": [
+      {"date": "2024-01-01", "value": 5.33},
+      {"date": "2024-07-01", "value": 5.33},
+      {"date": "2024-10-01", "value": 4.83},
+      {"date": "2025-01-01", "value": 4.33},
+      {"date": "2025-04-01", "value": 4.33},
+      {"date": "2025-07-01", "value": 4.33}
+    ],
+    "A191RL1Q225SBEA": [
+      {"date": "2024-01-01", "value": 1.6},
+      {"date": "2024-04-01", "value": 3.0},
+      {"date": "2024-07-01", "value": 3.1},
+      {"date": "2024-10-01", "value": 2.4},
+      {"date": "2025-01-01", "value": 2.0},
+      {"date": "2025-04-01", "value": 2.5}
+    ],
+    "UMCSENT": [
+      {"date": "2024-01-01", "value": 79.0},
+      {"date": "2024-04-01", "value": 77.2},
+      {"date": "2024-07-01", "value": 66.4},
+      {"date": "2024-10-01", "value": 70.5},
+      {"date": "2025-01-01", "value": 71.7},
+      {"date": "2025-04-01", "value": 52.2},
+      {"date": "2025-07-01", "value": 61.7}
+    ],
+    "T10Y2Y": [
+      {"date": "2023-07-01", "value": -0.9},
+      {"date": "2023-10-01", "value": -0.3},
+      {"date": "2024-01-01", "value": -0.35},
+      {"date": "2024-04-01", "value": -0.25},
+      {"date": "2024-07-01", "value": -0.15},
+      {"date": "2024-10-01", "value": 0.05},
+      {"date": "2025-01-01", "value": 0.25},
+      {"date": "2025-04-01", "value": 0.45},
+      {"date": "2025-07-01", "value": 0.55}
+    ],
+    "CPI_HOUSING": [
+      {"date": "2025-07-01", "value": 4.0}
+    ],
+    "CPI_FOOD": [
+      {"date": "2025-07-01", "value": 2.3}
+    ],
+    "CPI_ENERGY": [
+      {"date": "2025-07-01", "value": -2.1}
+    ],
+    "CPI_TRANSPORT": [
+      {"date": "2025-07-01", "value": 1.8}
+    ],
+    "CPI_MEDICAL": [
+      {"date": "2025-07-01", "value": 3.2}
+    ],
+    "CPI_OTHER": [
+      {"date": "2025-07-01", "value": 2.5}
+    ],
+    "RECESSION_PROB": [
+      {"date": "2024-07-01", "value": 32},
+      {"date": "2024-10-01", "value": 28},
+      {"date": "2025-01-01", "value": 24},
+      {"date": "2025-04-01", "value": 26},
+      {"date": "2025-07-01", "value": 22}
+    ]
+  },
+  "events": [
+    {
+      "date": "2025-07-11",
+      "title": "CPI Inflation Report",
+      "category": "inflation",
+      "plain_english": "The government published how much everyday prices rose last month."
+    },
+    {
+      "date": "2025-07-05",
+      "title": "Jobs Report (Nonfarm Payrolls)",
+      "category": "employment",
+      "plain_english": "The government counted how many new jobs the economy added."
+    },
+    {
+      "date": "2025-07-31",
+      "title": "FOMC Interest Rate Decision",
+      "category": "fed",
+      "plain_english": "The Federal Reserve decided whether to raise, cut, or hold its main interest rate."
+    },
+    {
+      "date": "2025-06-12",
+      "title": "CPI Inflation Report",
+      "category": "inflation",
+      "plain_english": "Monthly update on how fast prices are rising for a typical household basket."
+    },
+    {
+      "date": "2025-06-18",
+      "title": "FOMC Interest Rate Decision",
+      "category": "fed",
+      "plain_english": "Fed policymakers met and announced their rate decision."
+    },
+    {
+      "date": "2025-08-01",
+      "title": "Jobs Report (Nonfarm Payrolls)",
+      "category": "employment",
+      "plain_english": "Monthly scoreboard for US hiring."
+    },
+    {
+      "date": "2025-09-17",
+      "title": "FOMC Interest Rate Decision",
+      "category": "fed",
+      "plain_english": "Next scheduled Fed meeting where rates can change."
+    }
+  ],
+  "next_fomc": "2025-09-17",
+  "fomc_probabilities": {
+    "cut": 42,
+    "hold": 55,
+    "hike": 3
+  },
+  "rate_sensitivity": {
+    "Real Estate": -0.82,
+    "Financials": -0.55,
+    "Information Technology": -0.48,
+    "Consumer Discretionary": -0.41,
+    "Communication Services": -0.35,
+    "Industrials": -0.22,
+    "Materials": -0.18,
+    "Health Care": -0.12,
+    "Consumer Staples": -0.08,
+    "Utilities": 0.15,
+    "Energy": 0.05
+  }
+}

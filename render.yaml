@@ -1,0 +1,44 @@
+databases:
+  - name: plain-english-db
+    plan: free
+    databaseName: plain_english
+    user: plain_english
+
+services:
+  - type: web
+    name: plain-english-api
+    runtime: python
+    plan: free
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /api/health
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.13.1"
+      - key: DATABASE_URL
+        fromDatabase:
+          name: plain-english-db
+          property: connectionString
+      - key: DEMO_MODE
+        value: "false"
+      - key: ENABLE_SCHEDULER
+        value: "true"
+      - key: QUOTE_REFRESH_MINUTES
+        value: "15"
+      # Free instances sleep and cold-start; the first boot rebuilds the universe.
+      - key: STARTUP_REFRESH
+        value: "true"
+      # SEC EDGAR requires a real contact address in the User-Agent.
+      - key: SEC_USER_AGENT
+        sync: false
+      - key: CORS_ORIGINS
+        sync: false
+      - key: CORS_ORIGIN_REGEX
+        value: "https://.*\\.vercel\\.app"
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: AI_PROVIDER
+        value: auto
