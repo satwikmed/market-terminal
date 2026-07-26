@@ -64,43 +64,36 @@ export function CompanyPage() {
         setLoading(false);
         setEarnings(null);
 
-        const [historyResult, relationshipsResult, analogyResult, macroResult, institutionsResult, insidersResult] =
-          await Promise.allSettled([
-          api.history(ticker),
-          api.relationships(ticker),
-          api.analogy(ticker),
-          api.macro(),
-          api.institutions(ticker),
-          api.insiders(ticker),
-        ]);
-        if (!alive) return;
-
-        if (historyResult.status === 'fulfilled') {
-          setHistory(historyResult.value.map((p) => ({ date: p.date, close: p.close })));
-        }
-        if (relationshipsResult.status === 'fulfilled') setRels(relationshipsResult.value);
-        if (analogyResult.status === 'fulfilled') setAnalogy(analogyResult.value);
-        if (macroResult.status === 'fulfilled') {
-          setEvents(macroResult.value.events.map((e) => ({ date: e.date, title: e.title })));
-        }
-        if (institutionsResult.status === 'fulfilled') {
-          setHolders(institutionsResult.value.holders);
-          setOwnershipSource(
-            `${institutionsResult.value.source} · as of ${institutionsResult.value.as_of ?? 'latest filing'}`,
-          );
-        } else {
+        void api.history(ticker).then((points) => {
+          if (alive) setHistory(points.map((p) => ({ date: p.date, close: p.close })));
+        }).catch(console.error);
+        void api.relationships(ticker).then((rows) => {
+          if (alive) setRels(rows);
+        }).catch(console.error);
+        void api.analogy(ticker).then((value) => {
+          if (alive) setAnalogy(value);
+        }).catch(console.error);
+        void api.macro().then((macro) => {
+          if (alive) setEvents(macro.events.map((e) => ({ date: e.date, title: e.title })));
+        }).catch(console.error);
+        void api.institutions(ticker).then((value) => {
+          if (!alive) return;
+          setHolders(value.holders);
+          setOwnershipSource(`${value.source} · as of ${value.as_of ?? 'latest filing'}`);
+        }).catch(() => {
+          if (!alive) return;
           setHolders([]);
           setOwnershipSource('Live ownership data temporarily unavailable');
-        }
-        if (insidersResult.status === 'fulfilled') {
-          setInsiders(insidersResult.value.activity);
-          setInsiderSource(
-            `${insidersResult.value.source} · as of ${insidersResult.value.as_of ?? 'latest filing'}`,
-          );
-        } else {
+        });
+        void api.insiders(ticker).then((value) => {
+          if (!alive) return;
+          setInsiders(value.activity);
+          setInsiderSource(`${value.source} · as of ${value.as_of ?? 'latest filing'}`);
+        }).catch(() => {
+          if (!alive) return;
           setInsiders([]);
           setInsiderSource('Live insider data temporarily unavailable');
-        }
+        });
       } catch (err) {
         console.error(err);
         if (alive) {
