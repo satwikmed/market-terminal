@@ -26,6 +26,8 @@ import {
 export function CompanyPage() {
   const { ticker = '' } = useParams();
   const [company, setCompany] = useState<CompanyDetail | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
   const [history, setHistory] = useState<{ date: string; close: number }[]>([]);
   const [rels, setRels] = useState<Relationship[]>([]);
   const [analogy, setAnalogy] = useState<{ headline: string; comparisons: { sentence: string }[]; share_text: string } | null>(null);
@@ -44,32 +46,43 @@ export function CompanyPage() {
   useEffect(() => {
     let alive = true;
     setCompany(null);
+    setLoading(true);
+    setLoadError(false);
+    setHistory([]);
+    setRels([]);
+    setAnalogy(null);
+    setEvents([]);
     setHolders([]);
     setInsiders([]);
     setOwnershipSource(null);
     setInsiderSource(null);
     (async () => {
       try {
-        const [c, h, r, a, macro] = await Promise.all([
-          api.company(ticker),
+        const c = await api.company(ticker);
+        if (!alive) return;
+        setCompany(c);
+        setLoading(false);
+        setEarnings(null);
+
+        const [historyResult, relationshipsResult, analogyResult, macroResult, institutionsResult, insidersResult] =
+          await Promise.allSettled([
           api.history(ticker),
           api.relationships(ticker),
           api.analogy(ticker),
           api.macro(),
-        ]);
-        if (!alive) return;
-        setCompany(c);
-        setHistory(h.map((p) => ({ date: p.date, close: p.close })));
-        setRels(r);
-        setAnalogy(a);
-        setEvents(macro.events.map((e) => ({ date: e.date, title: e.title })));
-        setEarnings(null);
-
-        const [institutionsResult, insidersResult] = await Promise.allSettled([
           api.institutions(ticker),
           api.insiders(ticker),
         ]);
         if (!alive) return;
+
+        if (historyResult.status === 'fulfilled') {
+          setHistory(historyResult.value.map((p) => ({ date: p.date, close: p.close })));
+        }
+        if (relationshipsResult.status === 'fulfilled') setRels(relationshipsResult.value);
+        if (analogyResult.status === 'fulfilled') setAnalogy(analogyResult.value);
+        if (macroResult.status === 'fulfilled') {
+          setEvents(macroResult.value.events.map((e) => ({ date: e.date, title: e.title })));
+        }
         if (institutionsResult.status === 'fulfilled') {
           setHolders(institutionsResult.value.holders);
           setOwnershipSource(
@@ -90,7 +103,11 @@ export function CompanyPage() {
         }
       } catch (err) {
         console.error(err);
-        if (alive) setCompany(null);
+        if (alive) {
+          setCompany(null);
+          setLoadError(true);
+          setLoading(false);
+        }
       }
     })();
     return () => {
@@ -101,7 +118,11 @@ export function CompanyPage() {
   if (!company) {
     return (
       <div className="py-20 text-center font-mono text-terminal-muted">
-        Loading {ticker.toUpperCase()}… or ticker not in S&P 500 universe.
+        {loading
+          ? `Loading ${ticker.toUpperCase()}…`
+          : loadError
+            ? `${ticker.toUpperCase()} is unavailable right now.`
+            : `${ticker.toUpperCase()} is not in the S&P 500 universe.`}
         <div className="mt-4">
           <Link to="/map" className="text-terminal-accent">
             ← Back to map
