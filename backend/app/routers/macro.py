@@ -1,4 +1,5 @@
-from datetime import date
+import asyncio
+import time
 
 from fastapi import APIRouter, Depends
 from sqlalchemy import select
@@ -13,6 +14,29 @@ from app.services.macro_data import next_fomc_meeting, refresh_fred
 
 router = APIRouter(prefix="/api/macro", tags=["macro"])
 
+_fomc_cache: dict | None = None
+_fomc_cached_at = 0.0
+FOMC_CACHE_SECONDS = 6 * 60 * 60
+
+
+async def _cached_fomc() -> dict:
+    global _fomc_cache, _fomc_cached_at
+    if _fomc_cache and time.monotonic() - _fomc_cached_at < FOMC_CACHE_SECONDS:
+        return _fomc_cache
+    try:
+        value = await asyncio.wait_for(next_fomc_meeting(), timeout=3)
+    except Exception:  # noqa: BLE001
+        value = {
+            "date": None,
+            "days_until": None,
+            "source": "Federal Reserve FOMC calendar (temporarily unavailable)",
+            "source_url": "https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm",
+        }
+    _fomc_cache = value
+    _fomc_cached_at = time.monotonic()
+    return value
+
+
 SERIES_META = {
     "CPIAUCSL_YOY": ("Inflation (CPI YoY)", "%", "cpi"),
     "UNRATE": ("Unemployment Rate", "%", "unemployment"),
@@ -26,18 +50,6 @@ SERIES_META = {
 
 @router.get("/dashboard")
 async def macro_dashboard(db: AsyncSession = Depends(get_db)):
-    newest = (
-        await db.execute(
-            select(MacroObservation.obs_date)
-            .where(MacroObservation.series_id == "UNRATE")
-            .order_by(MacroObservation.obs_date.desc())
-            .limit(1)
-        )
-    ).scalar_one_or_none()
-    # Automatically replace stale seed data with live keyless FRED data.
-    if newest is None or (date.today() - newest).days > 60:
-        await refresh_fred(db)
-
     indicators: list[MacroIndicator] = []
     freshness: dict[str, str] = {}
     for series_id, (label, unit, explain_key) in SERIES_META.items():
@@ -94,15 +106,10 @@ async def macro_dashboard(db: AsyncSession = Depends(get_db)):
         if row:
             basket.append({"component": label, "value": row.value})
 
-    try:
-        fomc = await next_fomc_meeting()
-    except Exception:  # noqa: BLE001
-        fomc = {
-            "date": None,
-            "days_until": None,
-            "source": "Federal Reserve FOMC calendar (temporarily unavailable)",
-            "source_url": "https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm",
-        }
+    # FRED refreshes belong to the scheduler, not this request path. The
+    # calendar is the only live lookup left here and must never hold the whole
+    # economy page hostage when the Fed site is slow.
+    fomc = await _cached_fomc()
 
     events = []
     if fomc["date"]:
