@@ -8,11 +8,12 @@ const layers = [
     body: (
       <>
         All <strong className="text-terminal-text font-semibold">503 current S&amp;P 500 constituents</strong>{' '}
-        live in one universe. Open any ticker and you get live Yahoo Finance quotes, two years of price
-        history with macro event markers, and <strong className="text-terminal-text font-semibold">full
-        financial statements pulled straight from SEC XBRL filings</strong> — revenue, margins, cash flow,
-        and a dozen computed ratios going back to 2019. Market-cap analogies and metric tooltips translate
-        every number, so you never have to already know what P/E, beta, or free cash flow mean.
+        live in one universe. Open any ticker and you get Yahoo Finance last-sale quotes (refreshed
+        throughout the session — not SIP / Level&nbsp;1), two years of price history with macro event
+        markers, and <strong className="text-terminal-text font-semibold">full financial statements
+        pulled straight from SEC XBRL filings</strong> — revenue, margins, cash flow, and a dozen
+        computed ratios going back to 2019. Market-cap analogies and metric tooltips translate every
+        number, so you never have to already know what P/E, beta, or free cash flow mean.
       </>
     ),
   },
@@ -62,7 +63,7 @@ const layers = [
     body: (
       <>
         Four working tools, not screenshots. A{' '}
-        <strong className="text-terminal-text font-semibold">screener</strong> ranks all 503 names on live
+        <strong className="text-terminal-text font-semibold">screener</strong> ranks all 503 names on
         fundamentals and momentum. A <strong className="text-terminal-text font-semibold">risk lab</strong>{' '}
         computes beta, volatility, Sharpe, drawdown, and a correlation heatmap from two years of daily
         returns against SPY. A <strong className="text-terminal-text font-semibold">portfolio
@@ -79,9 +80,11 @@ const layers = [
     body: (
       <>
         Ownership and insider activity come from filing-derived Yahoo data with report dates.
-        Unavailable fundamentals show as unavailable — never as synthetic filler. The Sources page
-        lists every provider, record count, and how stale it is. Educational software, not investment
-        advice: no price targets, no buy/sell buttons, no invented odds.
+        Unavailable fundamentals show as unavailable — never as synthetic filler. A few names without
+        usable SEC revenue tags fall back to Yahoo TTM for the company-row figure only; multi-year
+        statements stay filing-sourced or blank. The Sources page lists every provider, record count,
+        and how stale it is — and states plainly what this is not: no Level&nbsp;1 tape, no invented
+        odds, no advice.
       </>
     ),
   },
@@ -171,13 +174,13 @@ export function LandingPage() {
                 What “in depth” means here
               </p>
               <p>
-                → 500+ companies with live quotes, fundamentals, and history
+                → 500+ companies with Yahoo last-sale quotes, fundamentals, and history
               </p>
               <p>
                 → A D3 force map you can actually explore (industry · relationships · rates)
               </p>
               <p>
-                → 7 years of financial statements + 12 ratios, pulled live from SEC XBRL
+                → Multi-year financial statements + 12 ratios from SEC XBRL (not invented)
               </p>
               <p>
                 → A quant desk: screener, risk lab, correlation heatmap, portfolio backtester

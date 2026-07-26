@@ -159,6 +159,14 @@ export function StatusPage() {
             estimate.
           </li>
           <li>
+            Claim SIP / Level&nbsp;1 institutional quotes. Prices come from Yahoo&apos;s last-sale
+            feed and refresh on a schedule — useful for education, not for trading desks.
+          </li>
+          <li>
+            Hide rate limits. When Yahoo throttles a cold deploy, the load retries with backoff and
+            keeps whatever real data already landed; it never swaps in synthetic prices.
+          </li>
+          <li>
             Let the AI supply its own facts. Filing translations are bounded to the filing text, and
             move explanations are bounded to evidence computed here.
           </li>

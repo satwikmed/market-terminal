@@ -392,6 +392,31 @@ def _latest_revenue(built: dict) -> float | None:
     return next((v for v in reversed(series) if v is not None), None)
 
 
+def yahoo_ttm_revenue(ticker: str) -> float | None:
+    """Trailing-twelve-month revenue from Yahoo when SEC XBRL has no top line.
+
+    A few S&P names (recent spin-offs, some oil & gas filers) either have empty
+    companyfacts or never tag annual revenue. Yahoo still publishes a TTM
+    figure; we use it only as a last resort for the company-row revenue field,
+    never to invent multi-year statements.
+    """
+    try:
+        import yfinance as yf
+
+        info = yf.Ticker(ticker).info or {}
+    except Exception as exc:  # noqa: BLE001
+        logger.debug("Yahoo revenue lookup failed for %s: %s", ticker, exc)
+        return None
+    raw = info.get("totalRevenue") or info.get("revenue")
+    if raw is None:
+        return None
+    try:
+        value = float(raw)
+    except (TypeError, ValueError):
+        return None
+    return value if value > 0 else None
+
+
 async def backfill_company_fundamentals(session_factory, *, force: bool = False) -> dict:
     """Populate revenue and debt/equity on every company from SEC filings.
 
@@ -399,6 +424,7 @@ async def backfill_company_fundamentals(session_factory, *, force: bool = False)
     pages show blanks for two of the columns people sort by first. Run in the
     background after a market load: it is ~500 SEC requests, paced under the
     fair-access limit, and resumable because it skips names already filled.
+    Names that still have no filing-tagged revenue fall back to Yahoo TTM.
     """
     from app.models.entities import Company
 
@@ -423,38 +449,61 @@ async def backfill_company_fundamentals(session_factory, *, force: bool = False)
     todo = [t for t, rev in rows if force or not rev or stale(t)]
     logger.info("fundamentals backfill: %s of %s names need filling", len(todo), len(rows))
 
-    filled = failed = 0
+    filled = yahoo_filled = failed = 0
     for ticker in todo:
         try:
             built = await asyncio.to_thread(build_financials, ticker)
         except Exception as exc:  # noqa: BLE001
             logger.debug("fundamentals build failed for %s: %s", ticker, exc)
             built = None
-        if not built:
-            failed += 1
-            continue
-        try:
-            async with session_factory() as db:
-                await get_financials(db, ticker, force=True)
-                company = (
-                    await db.execute(select(Company).where(Company.ticker == ticker))
-                ).scalar_one_or_none()
-                if company:
-                    revenue = _latest_revenue(built)
-                    if revenue is not None:
-                        company.revenue = float(revenue)
-                    # Filings are authoritative for leverage, so a ratio the
-                    # parser now rejects as not meaningful must also clear any
-                    # value an earlier parse wrote.
-                    de = built["ratios"].get("debt_to_equity")
-                    company.debt_to_equity = float(de) if de is not None else None
-                    await db.commit()
-            filled += 1
-        except Exception as exc:  # noqa: BLE001
-            logger.warning("fundamentals persist failed for %s: %s", ticker, exc)
-            failed += 1
+
+        if built:
+            try:
+                async with session_factory() as db:
+                    await get_financials(db, ticker, force=True)
+                    company = (
+                        await db.execute(select(Company).where(Company.ticker == ticker))
+                    ).scalar_one_or_none()
+                    if company:
+                        revenue = _latest_revenue(built)
+                        if revenue is not None:
+                            company.revenue = float(revenue)
+                        # Filings are authoritative for leverage, so a ratio the
+                        # parser now rejects as not meaningful must also clear any
+                        # value an earlier parse wrote.
+                        de = built["ratios"].get("debt_to_equity")
+                        company.debt_to_equity = float(de) if de is not None else None
+                        await db.commit()
+                filled += 1
+            except Exception as exc:  # noqa: BLE001
+                logger.warning("fundamentals persist failed for %s: %s", ticker, exc)
+                failed += 1
+        else:
+            # SEC has nothing usable (empty companyfacts or no revenue tag).
+            revenue = await asyncio.to_thread(yahoo_ttm_revenue, ticker)
+            if revenue is None:
+                failed += 1
+            else:
+                try:
+                    async with session_factory() as db:
+                        company = (
+                            await db.execute(select(Company).where(Company.ticker == ticker))
+                        ).scalar_one_or_none()
+                        if company:
+                            company.revenue = revenue
+                            await db.commit()
+                    yahoo_filled += 1
+                    logger.info("%s: SEC XBRL had no revenue; using Yahoo TTM $%.1fB", ticker, revenue / 1e9)
+                except Exception as exc:  # noqa: BLE001
+                    logger.warning("Yahoo revenue persist failed for %s: %s", ticker, exc)
+                    failed += 1
         await asyncio.sleep(0.08)  # SEC fair-access: stay well under 10 req/s
 
-    result = {"attempted": len(todo), "filled": filled, "failed": failed}
+    result = {
+        "attempted": len(todo),
+        "filled": filled,
+        "yahoo_revenue_fallback": yahoo_filled,
+        "failed": failed,
+    }
     logger.info("fundamentals backfill complete: %s", result)
     return result

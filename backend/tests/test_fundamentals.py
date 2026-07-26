@@ -5,7 +5,7 @@ tags abandoned mid-decade, banks with no combined revenue line, and gaps in
 early filings that would otherwise be charted as continuous years.
 """
 
-from app.services.fundamentals import _annual, _bank_revenue, _recent_run
+from app.services.fundamentals import _annual, _bank_revenue, _recent_run, yahoo_ttm_revenue
 
 
 def facts(**concepts: list[dict]) -> dict:
@@ -95,3 +95,19 @@ class TestBankRevenue:
 
     def test_returns_nothing_for_a_non_bank(self):
         assert _bank_revenue(facts(Revenues=[fy(2025, 1.0)])) == {}
+
+
+class TestYahooRevenueFallback:
+    def test_reads_total_revenue(self, monkeypatch):
+        class FakeTicker:
+            info = {"totalRevenue": 8_370_999_808}
+
+        monkeypatch.setattr("yfinance.Ticker", lambda _ticker: FakeTicker())
+        assert yahoo_ttm_revenue("APA") == 8_370_999_808.0
+
+    def test_returns_none_when_missing(self, monkeypatch):
+        class FakeTicker:
+            info = {}
+
+        monkeypatch.setattr("yfinance.Ticker", lambda _ticker: FakeTicker())
+        assert yahoo_ttm_revenue("ZZZZ") is None

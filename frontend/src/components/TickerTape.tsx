@@ -38,7 +38,9 @@ export function TickerTape() {
           {isLive ? 'Market open' : 'Market closed'}
         </span>
         <span className="text-terminal-accent">{label}</span>
-        <span className="hidden sm:inline">S&amp;P 500</span>
+        <span className="hidden sm:inline text-white/45">
+          {isLive ? 'not SIP / Level 1 · ~10m refresh' : 'S&P 500'}
+        </span>
       </div>
       <div className="overflow-hidden whitespace-nowrap py-2.5 tape-mask">
         <div className="tape-track inline-flex min-w-full">

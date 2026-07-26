@@ -15,7 +15,7 @@ ET = ZoneInfo("America/New_York")
     ("moment", "state", "label", "is_live"),
     [
         (datetime(2026, 7, 25, 12, tzinfo=ET), "weekend", "Friday's Close", False),
-        (datetime(2026, 7, 27, 10, tzinfo=ET), "open", "Live", True),
+        (datetime(2026, 7, 27, 10, tzinfo=ET), "open", "Yahoo · last sale", True),
         (
             datetime(2026, 7, 27, 17, tzinfo=ET),
             "closed_weekday",

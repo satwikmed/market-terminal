@@ -57,7 +57,9 @@ def get_market_session(dt: datetime | None = None) -> MarketSession:
         )
 
     if time(9, 30) <= t < time(16, 0):
-        return MarketSession(state="open", label="Live", is_live=True)
+        # Yahoo's last-sale feed is not SIP / Level 1. Label it so the UI never
+        # implies institutional real-time quotes when the session is merely open.
+        return MarketSession(state="open", label="Yahoo · last sale", is_live=True)
 
     # After 4pm ET on a weekday
     return MarketSession(

@@ -73,7 +73,11 @@ async def status(db: AsyncSession = Depends(get_db)):
                 "age_minutes": _age_minutes(newest_quote),
                 "notes": (
                     f"{with_fundamentals} of {companies} companies have a live P/E on file. "
-                    "Fields the source omits are shown as unavailable rather than estimated."
+                    f"Quotes refresh about every {settings.quote_refresh_minutes} minutes while "
+                    "the session is open. This is Yahoo's last-sale feed — not SIP / Level 1 "
+                    "institutional data. Rate limits are retried with backoff; numbers already "
+                    "on disk are never replaced with synthetic filler. A handful of names without "
+                    "usable SEC revenue tags fall back to Yahoo TTM revenue for the company row only."
                 ),
             },
             {
