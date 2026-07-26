@@ -8,7 +8,7 @@ from sqlalchemy import func, select
 
 from app.config import get_settings
 from app.database import SessionLocal, init_db
-from app.models.entities import MacroObservation, QuoteSnapshot
+from app.models.entities import MacroObservation, PriceBar, QuoteSnapshot
 from app.routers import (
     ai,
     bubble,
@@ -70,9 +70,16 @@ async def _plan_market_bootstrap(db) -> bool:
         await db.execute(select(QuoteSnapshot).where(QuoteSnapshot.ticker == "AAPL"))
     ).scalar_one_or_none()
     existing = (await db.execute(select(func.count()).select_from(QuoteSnapshot))).scalar_one()
-    if aapl and aapl.price > 100 and existing >= 400:
-        logger.info("using cached live quotes (AAPL=$%.2f, n=%s)", aapl.price, existing)
-        BOOTSTRAP.update(state="complete", detail=f"{existing} cached live quotes")
+    bars = (await db.execute(select(func.count()).select_from(PriceBar))).scalar_one()
+    # History powers risk, correlation, and backtests, so cached quotes alone
+    # aren't enough — a deploy that interrupts the first load must retry here.
+    # 503 names × ~500 daily bars ≈ 250k rows; anything far below that means
+    # the history pull never finished.
+    if aapl and aapl.price > 100 and existing >= 400 and bars >= 50_000:
+        logger.info(
+            "using cached live data (AAPL=$%.2f, quotes=%s, bars=%s)", aapl.price, existing, bars
+        )
+        BOOTSTRAP.update(state="complete", detail=f"{existing} cached quotes, {bars} bars")
         return False
 
     if not settings.startup_refresh:
