@@ -80,6 +80,14 @@ export function FinancialsSection({ ticker }: { ticker: string }) {
         </a>
       </div>
 
+      {data.negative_equity && (
+        <p className="mt-3 border-l-2 border-terminal-warn/60 pl-2.5 text-xs text-terminal-muted leading-relaxed">
+          Book equity is negative — years of buybacks have exceeded retained earnings. Return on
+          equity and debt/equity divide by that figure, so they are not meaningful and are left
+          blank rather than shown as large negative numbers.
+        </p>
+      )}
+
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 mt-3">
         {RATIO_LABELS.map((r) => {
           const v = data.ratios[r.key];

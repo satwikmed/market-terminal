@@ -28,6 +28,10 @@ logger = logging.getLogger(__name__)
 
 FACTS_TTL_HOURS = 24 * 7  # filings update quarterly; a week of cache is safe
 
+# Bump when the parsing rules change, so cached payloads built by older logic
+# are rebuilt on next read instead of serving numbers we no longer stand behind.
+PARSER_VERSION = 2
+
 # Each line item lists the us-gaap concepts we accept, most-preferred first.
 # Companies tag the "same" number under different concepts across eras.
 REVENUE = [
@@ -293,13 +297,19 @@ def build_financials(ticker: str) -> dict | None:
     as_l = latest_of(assets)
     fcf_l = fcf_series[-1]
 
+    # Sustained buybacks can push book equity below zero (McDonald's, Boeing,
+    # Philip Morris). Dividing by it yields a large negative ratio that reads
+    # like a data error, so return-on-equity and leverage are simply not
+    # meaningful here and are reported as unavailable.
+    equity_positive = eq_l if (eq_l or 0) > 0 else None
+
     ratios = {
         "gross_margin": _pct(_safe_div(gp_l, rev_l)),
         "operating_margin": _pct(_safe_div(oi_l, rev_l)),
         "net_margin": _pct(_safe_div(ni_l, rev_l)),
-        "roe": _pct(_safe_div(ni_l, eq_l)),
+        "roe": _pct(_safe_div(ni_l, equity_positive)),
         "roa": _pct(_safe_div(ni_l, as_l)),
-        "debt_to_equity": _round(_safe_div(latest_of(lt_debt), eq_l)),
+        "debt_to_equity": _round(_safe_div(latest_of(lt_debt), equity_positive)),
         "current_ratio": _round(_safe_div(latest_of(cur_assets), latest_of(cur_liab))),
         "fcf_margin": _pct(_safe_div(fcf_l, rev_l)),
         "rnd_intensity": _pct(_safe_div(latest_of(rnd), rev_l)),
@@ -335,6 +345,8 @@ def build_financials(ticker: str) -> dict | None:
             },
         },
         "ratios": ratios,
+        "parser_version": PARSER_VERSION,
+        "negative_equity": eq_l is not None and eq_l <= 0,
         "source": "SEC EDGAR XBRL company facts",
         "source_url": f"https://data.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK={_padded_cik(ticker)}",
     }
@@ -355,8 +367,9 @@ async def get_financials(db: AsyncSession, ticker: str, *, force: bool = False) 
     ).scalar_one_or_none()
     if row and not force:
         age_h = (datetime.utcnow() - row.fetched_at).total_seconds() / 3600
-        if age_h < FACTS_TTL_HOURS:
-            return json.loads(row.payload)
+        cached = json.loads(row.payload)
+        if age_h < FACTS_TTL_HOURS and cached.get("parser_version") == PARSER_VERSION:
+            return cached
 
     built = build_financials(ticker)
     if built is None:
@@ -391,7 +404,23 @@ async def backfill_company_fundamentals(session_factory, *, force: bool = False)
 
     async with session_factory() as db:
         rows = (await db.execute(select(Company.ticker, Company.revenue))).all()
-    todo = [t for t, rev in rows if force or not rev]
+        cached = dict(
+            (await db.execute(select(FinancialsCache.ticker, FinancialsCache.payload))).all()
+        )
+
+    def stale(ticker: str) -> bool:
+        payload = cached.get(ticker)
+        if payload is None:
+            return True
+        try:
+            return json.loads(payload).get("parser_version") != PARSER_VERSION
+        except json.JSONDecodeError:
+            return True
+
+    # Names are reprocessed when the figures are missing or when the cached
+    # parse predates the current rules, so a parser fix reaches every company
+    # instead of only the ones that happened to have no data.
+    todo = [t for t, rev in rows if force or not rev or stale(t)]
     logger.info("fundamentals backfill: %s of %s names need filling", len(todo), len(rows))
 
     filled = failed = 0
@@ -414,9 +443,11 @@ async def backfill_company_fundamentals(session_factory, *, force: bool = False)
                     revenue = _latest_revenue(built)
                     if revenue is not None:
                         company.revenue = float(revenue)
+                    # Filings are authoritative for leverage, so a ratio the
+                    # parser now rejects as not meaningful must also clear any
+                    # value an earlier parse wrote.
                     de = built["ratios"].get("debt_to_equity")
-                    if de is not None:
-                        company.debt_to_equity = float(de)
+                    company.debt_to_equity = float(de) if de is not None else None
                     await db.commit()
             filled += 1
         except Exception as exc:  # noqa: BLE001

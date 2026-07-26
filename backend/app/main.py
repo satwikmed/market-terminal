@@ -4,7 +4,7 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from sqlalchemy import func, or_, select
+from sqlalchemy import func, select
 
 from app.config import get_settings
 from app.database import SessionLocal, init_db
@@ -155,24 +155,13 @@ async def lifespan(_: FastAPI):
             await seed_macro(db)
 
         needs_refresh = await _plan_market_bootstrap(db)
-        missing_fundamentals = (
-            await db.execute(
-                select(func.count())
-                .select_from(Company)
-                .where(or_(Company.revenue.is_(None), Company.revenue == 0))
-            )
-        ).scalar_one()
 
     # Detached so the app can answer health checks immediately. A cold database
     # takes several minutes to populate, which would otherwise fail the deploy.
-    if needs_refresh:
-        # _full_refresh backfills filing fundamentals itself once prices land.
-        task = asyncio.create_task(_full_refresh())
-    elif missing_fundamentals:
-        logger.info("%s companies missing filing fundamentals; backfilling", missing_fundamentals)
-        task = asyncio.create_task(_backfill_filing_fundamentals())
-    else:
-        task = None
+    # _full_refresh backfills filing fundamentals itself once prices land;
+    # otherwise run that pass alone, where it is a no-op unless something is
+    # missing or was parsed by superseded rules.
+    task = asyncio.create_task(_full_refresh() if needs_refresh else _backfill_filing_fundamentals())
 
     start_scheduler()
     try:

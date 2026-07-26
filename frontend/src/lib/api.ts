@@ -166,6 +166,7 @@ export type Financials = {
   currency: string;
   statements: FinancialStatements;
   ratios: Record<string, number | null>;
+  negative_equity: boolean;
   peer_context: { sector: string; peer_count: number };
   source: string;
   source_url: string;
