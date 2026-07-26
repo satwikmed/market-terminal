@@ -9,6 +9,7 @@ invented, and missing tags stay missing rather than being guessed.
 
 from __future__ import annotations
 
+import asyncio
 import gzip
 import json
 import logging
@@ -34,7 +35,13 @@ REVENUE = [
     "Revenues",
     "SalesRevenueNet",
     "RevenueFromContractWithCustomerIncludingAssessedTax",
+    # Banks and brokers report a single "net revenues" line instead.
+    "RevenuesNetOfInterestExpense",
 ]
+# Lenders that report no combined revenue line: the sector convention is net
+# interest income plus fee income, so we add the two reported figures rather
+# than fall back to gross interest income, which would overstate the top line.
+BANK_REVENUE_PARTS = (["InterestIncomeExpenseNet"], ["NoninterestIncome"])
 COST_OF_REVENUE = ["CostOfRevenue", "CostOfGoodsAndServicesSold", "CostOfGoodsSold"]
 GROSS_PROFIT = ["GrossProfit"]
 OPERATING_INCOME = ["OperatingIncomeLoss"]
@@ -68,6 +75,12 @@ def _headers() -> dict[str, str]:
     }
 
 
+# When a company reorganises under a new holding company, SEC's ticker map
+# points at the new registrant, whose company-facts are empty until it has
+# filed. The filing history stays under the predecessor CIK.
+PREDECESSOR_CIK = {"XOM": "0000034088"}  # Exxon Mobil Corporation
+
+
 def _padded_cik(ticker: str) -> str | None:
     cik = sec_filings.cik_for(ticker)
     if not cik:
@@ -76,10 +89,7 @@ def _padded_cik(ticker: str) -> str | None:
     return digits.zfill(10) if digits else None
 
 
-def _fetch_company_facts(ticker: str) -> dict | None:
-    cik = _padded_cik(ticker)
-    if not cik:
-        return None
+def _fetch_facts_for_cik(cik: str) -> dict | None:
     url = f"https://data.sec.gov/api/xbrl/companyfacts/CIK{cik}.json"
     for attempt in range(3):
         try:
@@ -94,9 +104,26 @@ def _fetch_company_facts(ticker: str) -> dict | None:
                 return None
             time.sleep(0.4 * (attempt + 1))
         except Exception as exc:  # noqa: BLE001
-            logger.debug("companyfacts fetch failed for %s: %s", ticker, exc)
+            logger.debug("companyfacts fetch failed for CIK %s: %s", cik, exc)
             time.sleep(0.4 * (attempt + 1))
     return None
+
+
+def _has_gaap_facts(facts: dict | None) -> bool:
+    return bool((facts or {}).get("facts", {}).get("us-gaap"))
+
+
+def _fetch_company_facts(ticker: str) -> dict | None:
+    cik = _padded_cik(ticker)
+    if not cik:
+        return None
+    facts = _fetch_facts_for_cik(cik)
+    if not _has_gaap_facts(facts):
+        predecessor = PREDECESSOR_CIK.get(ticker.upper())
+        if predecessor:
+            logger.info("%s has no facts under CIK %s; using predecessor %s", ticker, cik, predecessor)
+            facts = _fetch_facts_for_cik(predecessor) or facts
+    return facts
 
 
 def _annual(facts: dict, concepts: list[str], *, duration: bool) -> dict[int, float]:
@@ -106,7 +133,8 @@ def _annual(facts: dict, concepts: list[str], *, duration: bool) -> dict[int, fl
     duration=False -> instant items (balance-sheet snapshots)
     """
     gaap = facts.get("facts", {}).get("us-gaap", {})
-    for concept in concepts:
+    candidates: list[tuple[int, int, int, dict[int, float]]] = []
+    for rank, concept in enumerate(concepts):
         node = gaap.get(concept)
         if not node:
             continue
@@ -138,8 +166,28 @@ def _annual(facts: dict, concepts: list[str], *, duration: bool) -> dict[int, fl
             # Prefer a point that carries an official CY/FY frame (deduped by SEC).
             by_year[int(fy)] = float(val)
         if by_year:
-            return by_year
-    return {}
+            candidates.append((max(by_year), len(by_year), -rank, by_year))
+
+    if not candidates:
+        return {}
+    # Companies switch tags between eras, and the tag we list first is often the
+    # one they abandoned. Take the concept reporting the most recent year — never
+    # a blend of concepts, which would splice two different definitions into one
+    # series — falling back to coverage and then to listed preference.
+    return max(candidates, key=lambda c: c[:3])[3]
+
+
+def _bank_revenue(facts: dict) -> dict[int, float]:
+    """Total revenue for lenders: net interest income + noninterest income.
+
+    Only years where both components are reported are returned, so a partial
+    filing can never produce a half-counted top line.
+    """
+    net_interest = _annual(facts, BANK_REVENUE_PARTS[0], duration=True)
+    fees = _annual(facts, BANK_REVENUE_PARTS[1], duration=True)
+    if not net_interest or not fees:
+        return {}
+    return {y: net_interest[y] + fees[y] for y in net_interest.keys() & fees.keys()}
 
 
 def _series(by_year: dict[int, float], years: list[int]) -> list[float | None]:
@@ -164,12 +212,29 @@ def _cagr(series: list[float | None]) -> float | None:
         return None
 
 
+def _recent_run(fiscal_years, limit: int = 10) -> list[int]:
+    """The most recent unbroken run of fiscal years, newest `limit` at most.
+
+    Older filings tag inconsistently, leaving holes. Plotting across a hole
+    would draw a gap as if it were continuous growth, so we stop at the break.
+    """
+    available = sorted(fiscal_years)
+    if not available:
+        return []
+    run = [available[-1]]
+    for year in reversed(available[:-1]):
+        if year != run[0] - 1:
+            break
+        run.insert(0, year)
+    return run[-limit:]
+
+
 def build_financials(ticker: str) -> dict | None:
     facts = _fetch_company_facts(ticker)
     if not facts:
         return None
 
-    revenue = _annual(facts, REVENUE, duration=True)
+    revenue = _annual(facts, REVENUE, duration=True) or _bank_revenue(facts)
     if not revenue:
         return None
     cost = _annual(facts, COST_OF_REVENUE, duration=True)
@@ -189,7 +254,7 @@ def build_financials(ticker: str) -> dict | None:
     cash = _annual(facts, CASH, duration=False)
     lt_debt = _annual(facts, LONG_TERM_DEBT, duration=False)
 
-    years = sorted(revenue.keys())[-10:]
+    years = _recent_run(revenue.keys())
     if not years:
         return None
 
@@ -307,3 +372,58 @@ async def get_financials(db: AsyncSession, ticker: str, *, force: bool = False) 
         db.add(FinancialsCache(ticker=ticker, payload=payload, fetched_at=datetime.utcnow()))
     await db.commit()
     return built
+
+
+def _latest_revenue(built: dict) -> float | None:
+    series = built["statements"]["income"]["revenue"]
+    return next((v for v in reversed(series) if v is not None), None)
+
+
+async def backfill_company_fundamentals(session_factory, *, force: bool = False) -> dict:
+    """Populate revenue and debt/equity on every company from SEC filings.
+
+    Yahoo's quote API omits both, so without this the screener and company
+    pages show blanks for two of the columns people sort by first. Run in the
+    background after a market load: it is ~500 SEC requests, paced under the
+    fair-access limit, and resumable because it skips names already filled.
+    """
+    from app.models.entities import Company
+
+    async with session_factory() as db:
+        rows = (await db.execute(select(Company.ticker, Company.revenue))).all()
+    todo = [t for t, rev in rows if force or not rev]
+    logger.info("fundamentals backfill: %s of %s names need filling", len(todo), len(rows))
+
+    filled = failed = 0
+    for ticker in todo:
+        try:
+            built = await asyncio.to_thread(build_financials, ticker)
+        except Exception as exc:  # noqa: BLE001
+            logger.debug("fundamentals build failed for %s: %s", ticker, exc)
+            built = None
+        if not built:
+            failed += 1
+            continue
+        try:
+            async with session_factory() as db:
+                await get_financials(db, ticker, force=True)
+                company = (
+                    await db.execute(select(Company).where(Company.ticker == ticker))
+                ).scalar_one_or_none()
+                if company:
+                    revenue = _latest_revenue(built)
+                    if revenue is not None:
+                        company.revenue = float(revenue)
+                    de = built["ratios"].get("debt_to_equity")
+                    if de is not None:
+                        company.debt_to_equity = float(de)
+                    await db.commit()
+            filled += 1
+        except Exception as exc:  # noqa: BLE001
+            logger.warning("fundamentals persist failed for %s: %s", ticker, exc)
+            failed += 1
+        await asyncio.sleep(0.08)  # SEC fair-access: stay well under 10 req/s
+
+    result = {"attempted": len(todo), "filled": filled, "failed": failed}
+    logger.info("fundamentals backfill complete: %s", result)
+    return result

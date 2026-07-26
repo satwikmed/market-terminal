@@ -70,6 +70,17 @@ async def refresh_daily_job() -> None:
         _record("daily_market", "error", str(exc))
         logger.warning("scheduled daily refresh failed: %s", exc)
 
+    # Tops up names still missing filed revenue or leverage — index additions,
+    # or companies that had not filed yet last time we asked.
+    try:
+        from app.services.fundamentals import backfill_company_fundamentals
+
+        filled = await backfill_company_fundamentals(SessionLocal)
+        _record("daily_fundamentals", "ok", filled)
+    except Exception as exc:  # noqa: BLE001
+        _record("daily_fundamentals", "error", str(exc))
+        logger.warning("scheduled fundamentals backfill failed: %s", exc)
+
 
 async def refresh_macro_job() -> None:
     from app.services.macro_data import refresh_fred

@@ -318,14 +318,13 @@ async def apply_fundamentals(db: AsyncSession, fundamentals: dict[str, dict[str,
             float(f["pe_ratio"]) if f.get("pe_ratio") is not None else None
         )
         row.eps = float(f["eps"]) if f.get("eps") is not None else None
-        row.revenue = (
-            float(f["revenue"]) if f.get("revenue") is not None else None
-        )
-        row.debt_to_equity = (
-            float(f["debt_to_equity"])
-            if f.get("debt_to_equity") is not None
-            else None
-        )
+        # Revenue and leverage come from SEC filings, which the quote API does
+        # not carry. Blanking them here would erase the filed figures on every
+        # nightly refresh, so these two are only ever written, never cleared.
+        if f.get("revenue") is not None:
+            row.revenue = float(f["revenue"])
+        if f.get("debt_to_equity") is not None:
+            row.debt_to_equity = float(f["debt_to_equity"])
         row.dividend_yield = (
             float(f["dividend_yield"])
             if f.get("dividend_yield") is not None

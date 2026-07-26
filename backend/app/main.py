@@ -4,7 +4,7 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from sqlalchemy import func, select
+from sqlalchemy import func, or_, select
 
 from app.config import get_settings
 from app.database import SessionLocal, init_db
@@ -62,6 +62,7 @@ async def _full_refresh(attempts: int = 4) -> None:
                 )
             BOOTSTRAP.update(state="complete", detail=result)
             logger.info("initial market load complete: %s", result)
+            await _backfill_filing_fundamentals()
             return
         except Exception as exc:  # noqa: BLE001
             last_error = str(exc)
@@ -73,6 +74,17 @@ async def _full_refresh(attempts: int = 4) -> None:
 
     BOOTSTRAP.update(state="degraded", detail=f"live market feed unavailable: {last_error}")
     logger.error("market load failed after %s attempts: %s", attempts, last_error)
+
+
+async def _backfill_filing_fundamentals() -> None:
+    """Fill revenue and leverage from SEC filings; Yahoo's quote API omits both."""
+    from app.services.fundamentals import backfill_company_fundamentals
+
+    try:
+        await backfill_company_fundamentals(SessionLocal)
+    except Exception as exc:  # noqa: BLE001
+        # Never fatal: prices and risk work without it, the fields just stay blank.
+        logger.warning("fundamentals backfill failed: %s", exc)
 
 
 async def _plan_market_bootstrap(db) -> bool:
@@ -143,10 +155,24 @@ async def lifespan(_: FastAPI):
             await seed_macro(db)
 
         needs_refresh = await _plan_market_bootstrap(db)
+        missing_fundamentals = (
+            await db.execute(
+                select(func.count())
+                .select_from(Company)
+                .where(or_(Company.revenue.is_(None), Company.revenue == 0))
+            )
+        ).scalar_one()
 
     # Detached so the app can answer health checks immediately. A cold database
     # takes several minutes to populate, which would otherwise fail the deploy.
-    task = asyncio.create_task(_full_refresh()) if needs_refresh else None
+    if needs_refresh:
+        # _full_refresh backfills filing fundamentals itself once prices land.
+        task = asyncio.create_task(_full_refresh())
+    elif missing_fundamentals:
+        logger.info("%s companies missing filing fundamentals; backfilling", missing_fundamentals)
+        task = asyncio.create_task(_backfill_filing_fundamentals())
+    else:
+        task = None
 
     start_scheduler()
     try:
