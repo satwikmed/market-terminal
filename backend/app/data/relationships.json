@@ -141,7 +141,7 @@
     "source": "NVDA",
     "target": "AVGO",
     "type": "competitor",
-    "plain_english": "Broadcom competes in networking chips that connect AI servers: and also builds custom AI chips for hyperscalers."
+    "plain_english": "Broadcom competes in networking chips that connect AI servers and also builds custom AI chips for hyperscalers."
   },
   {
     "source": "META",
@@ -951,7 +951,7 @@
     "source": "UPS",
     "target": "AMZN",
     "type": "customer",
-    "plain_english": "Amazon is a huge shipping customer: and also builds its own delivery network that competes with UPS."
+    "plain_english": "Amazon is a huge shipping customer and also builds its own delivery network that competes with UPS."
   },
   {
     "source": "FDX",

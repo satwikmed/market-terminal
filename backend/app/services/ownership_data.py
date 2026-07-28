@@ -129,7 +129,7 @@ def insider_activity(ticker: str) -> dict[str, Any]:
             if action == "buy"
             else "Insiders sell for many reasons, including taxes and diversification; a sale alone is not a bearish signal."
             if action == "sell"
-            else "This may be an award, grant, transfer, or another non-market transaction."
+            else "This may be an award, grant, transfer, or another nonmarket transaction."
         )
         activity.append(
             {

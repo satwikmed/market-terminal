@@ -80,7 +80,7 @@ const layers = [
     title: 'Provenance as a feature',
     body: (
       <>
-        Ownership and insider activity come from filing-derived Yahoo data with report dates.
+        Ownership and insider activity come from filing derived Yahoo data with report dates.
         Unavailable fundamentals show as unavailable, never as synthetic filler. A few names without
         usable SEC revenue tags fall back to Yahoo TTM for the company row figure only; multi year
         statements stay filing sourced or blank. The Sources page lists every provider, record count,

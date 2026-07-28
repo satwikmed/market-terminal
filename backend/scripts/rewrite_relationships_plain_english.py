@@ -22,6 +22,7 @@ def rewrite_plain_english(s: str) -> str:
     while WORD_HYPHEN.search(out):
         out = WORD_HYPHEN.sub(r"\1 \2", out)
     out = re.sub(r":\s*:", ":", out)
+    out = re.sub(r":\s+and\b", " and", out, flags=re.I)
     out = re.sub(r"  +", " ", out)
     return out.strip()
 
