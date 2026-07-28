@@ -25,7 +25,7 @@ def explain_metric(metric: str, value: Any) -> dict[str, str]:
     if value is None:
         return {
             "metric": metric,
-            "value_display": "—",
+            "value_display": "n/a",
             "plain_english": "We don't have this number right now.",
         }
 
@@ -48,7 +48,7 @@ def explain_metric(metric: str, value: Any) -> dict[str, str]:
 
     if key in {"debt_to_equity", "d/e", "de"}:
         return {
-            "metric": "Debt-to-Equity",
+            "metric": "Debt to Equity",
             "value_display": f"{num:.2f}" if num is not None else str(value),
             "plain_english": (
                 f"For every $1 the company owns, it owes ${num:.2f} to lenders."
@@ -139,7 +139,7 @@ def explain_metric(metric: str, value: Any) -> dict[str, str]:
             "metric": "Fed Funds Rate",
             "value_display": f"{num:.2f}%" if num is not None else str(value),
             "plain_english": (
-                f"The Federal Reserve's main interest-rate target is about {num:.2f}%. "
+                f"The Federal Reserve's main interest rate target is about {num:.2f}%. "
                 f"When this goes up, borrowing (mortgages, credit cards) usually gets more expensive."
                 if num is not None
                 else "Fed rate isn't available."
@@ -173,22 +173,22 @@ def explain_metric(metric: str, value: Any) -> dict[str, str]:
             "value_display": f"{num:.2f}%" if num is not None else str(value),
             "plain_english": (
                 "This compares what the government pays to borrow for 2 years vs 10 years. "
-                "When the short-term rate is higher than the long-term rate (an 'inverted' curve), "
-                "it has historically often shown up before recessions — but it's a pattern, not a guarantee."
+                "When the short term rate is higher than the long term rate (an 'inverted' curve), "
+                "it has historically often shown up before recessions, but it's a pattern, not a guarantee."
             ),
         }
 
     return {
         "metric": metric,
         "value_display": str(value),
-        "plain_english": "This number helps describe the company or economy; hover metrics across the app for kid-friendly explanations.",
+        "plain_english": "This number helps describe the company or economy; hover metrics across the app for kid friendly explanations.",
     }
 
 
 def analogy_for_market_cap(market_cap: float | None, company_name: str) -> dict[str, Any]:
     if not market_cap or market_cap <= 0:
         return {
-            "headline": f"We don't have a market-cap analogy for {company_name} yet.",
+            "headline": f"We don't have a market cap analogy for {company_name} yet.",
             "comparisons": [],
             "share_text": "",
         }
@@ -225,7 +225,7 @@ def analogy_for_market_cap(market_cap: float | None, company_name: str) -> dict[
     top = comparisons[0]["sentence"]
     share_text = (
         f"{company_name} is worth {_fmt_money(market_cap)}. {top} "
-        f"— via Plain English Terminal"
+        f"via Plain English Terminal"
     )
 
     return {
@@ -237,7 +237,7 @@ def analogy_for_market_cap(market_cap: float | None, company_name: str) -> dict[
 
 METRIC_CATALOG = [
     {"key": "pe_ratio", "label": "P/E Ratio"},
-    {"key": "debt_to_equity", "label": "Debt-to-Equity"},
+    {"key": "debt_to_equity", "label": "Debt to Equity"},
     {"key": "market_cap", "label": "Market Cap"},
     {"key": "eps", "label": "EPS"},
     {"key": "dividend_yield", "label": "Dividend Yield"},

@@ -281,7 +281,7 @@ def _drivers_from_evidence(bundle: dict) -> list[dict]:
     """
     confidence_by_kind = {"filing": 65, "sector": 55, "market": 60, "macro": 40, "volatility": 80}
     hedge_by_kind = {
-        "filing": "Timing overlap only — the filing may not be what moved the price.",
+        "filing": "Timing overlap only: the filing may not be what moved the price.",
         "sector": "Correlation, not proof of a shared cause.",
         "market": "Correlation, not proof of a shared cause.",
         "macro": "Macro releases affect stocks unevenly and with a lag.",

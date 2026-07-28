@@ -14,7 +14,7 @@ async def leaderboard(db: AsyncSession = Depends(get_db)):
 
 @router.get("/correlation")
 async def correlation(
-    tickers: str = Query(..., description="Comma-separated tickers"),
+    tickers: str = Query(..., description="Comma separated tickers"),
     db: AsyncSession = Depends(get_db),
 ):
     names = [t.strip().upper() for t in tickers.split(",") if t.strip()]

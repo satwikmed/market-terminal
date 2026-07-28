@@ -47,7 +47,7 @@ def get_market_session(dt: datetime | None = None) -> MarketSession:
         if t >= time(4, 0):
             return MarketSession(
                 state="premarket",
-                label="Pre-Market",
+                label="Premarket",
                 is_live=False,
             )
         return MarketSession(

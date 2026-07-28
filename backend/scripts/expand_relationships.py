@@ -69,7 +69,7 @@ for industry, members in by_industry.items():
             if other["ticker"] == c["ticker"]:
                 continue
             plain = (
-                f"{c['name']} and {other['name']} are both in {industry} — "
+                f"{c['name']} and {other['name']} are both in {industry}: "
                 f"they compete for similar customers and investor attention."
             )
             add(c["ticker"], other["ticker"], "competitor", plain)
@@ -83,7 +83,7 @@ for c in sp500:
     sector_mates = sorted(sector_mates, key=lambda x: x["ticker"])[:3]
     for other in sector_mates:
         plain = (
-            f"{c['name']} and {other['name']} sit in the {c['sector']} sector — "
+            f"{c['name']} and {other['name']} sit in the {c['sector']} sector: "
             f"their stocks often move with the same economic themes."
         )
         add(c["ticker"], other["ticker"], "competitor", plain)

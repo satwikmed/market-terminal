@@ -121,5 +121,5 @@ async def run_backtest(db: AsyncSession, holdings: list[dict]) -> dict:
         "contributions": contributions,
         "curve": curve,
         "benchmark": BENCHMARK,
-        "note": "Buy-and-hold simulation from stored daily closes. Educational, not advice.",
+        "note": "Buy and hold simulation from stored daily closes. Educational, not advice.",
     }

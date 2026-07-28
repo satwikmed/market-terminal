@@ -304,7 +304,7 @@ async def refresh_live_quotes_yfinance(
 
     if settings.demo_mode:
         n = await seed_quotes(db)
-        return {"mode": "demo", "updated": n, "warning": "DEMO_MODE=true — using synthetic prices"}
+        return {"mode": "demo", "updated": n, "warning": "DEMO_MODE=true: using synthetic prices"}
 
     try:
         if full:

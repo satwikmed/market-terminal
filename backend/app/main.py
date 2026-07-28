@@ -69,7 +69,7 @@ async def _full_refresh(attempts: int = 4) -> None:
             logger.warning("market load attempt %s/%s failed: %s", attempt, attempts, exc)
             if attempt < attempts:
                 delay = min(60 * attempt, 300)
-                BOOTSTRAP.update(state="retrying", detail=f"{last_error} — retrying in {delay}s")
+                BOOTSTRAP.update(state="retrying", detail=f"{last_error}: retrying in {delay}s")
                 await asyncio.sleep(delay)
 
     BOOTSTRAP.update(state="degraded", detail=f"live market feed unavailable: {last_error}")
@@ -176,7 +176,7 @@ settings = get_settings()
 app = FastAPI(
     title=settings.app_name,
     description=(
-        "Plain-English market data for beginners. Live quotes from Yahoo Finance, filings from "
+        "Plain English market data for beginners. Live quotes from Yahoo Finance, filings from "
         "SEC EDGAR, macro series from FRED, and an AI layer that is only allowed to explain "
         "evidence this API computed itself."
     ),

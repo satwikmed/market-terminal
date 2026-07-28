@@ -47,19 +47,19 @@ _MIN_INTERVAL = 0.15
 FORM_GUIDE: dict[str, dict[str, str]] = {
     "10-K": {
         "label": "Annual report",
-        "plain": "The company's once-a-year full report card: what it sells, how much money it made, and everything that could go wrong.",
+        "plain": "The company's once a year full report card: what it sells, how much money it made, and everything that could go wrong.",
     },
     "10-Q": {
         "label": "Quarterly report",
-        "plain": "A shorter three-month update on revenue, profit, and anything that changed since the annual report.",
+        "plain": "A shorter three month update on revenue, profit, and anything that changed since the annual report.",
     },
     "8-K": {
         "label": "Breaking news filing",
-        "plain": "A 'something important just happened' notice — earnings releases, executive changes, big deals, or unexpected events.",
+        "plain": "A 'something important just happened' notice: earnings releases, executive changes, big deals, or unexpected events.",
     },
     "DEF 14A": {
         "label": "Proxy statement",
-        "plain": "The shareholder-vote booklet: executive pay, board members, and the questions shareholders get to vote on.",
+        "plain": "The shareholder vote booklet: executive pay, board members, and the questions shareholders get to vote on.",
     },
     "S-1": {
         "label": "IPO registration",

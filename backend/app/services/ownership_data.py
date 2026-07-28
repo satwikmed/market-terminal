@@ -65,7 +65,7 @@ def institutional_ownership(ticker: str) -> dict[str, Any]:
             f"{pct:.1f}% of the company"
         )
         if denominator:
-            plain += f" — roughly 1 in every {denominator} shares."
+            plain += f", roughly 1 in every {denominator} shares."
         else:
             plain += "."
         holders.append(

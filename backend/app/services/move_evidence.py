@@ -83,7 +83,7 @@ async def _market_context(db: AsyncSession, ticker: str, sector: str) -> tuple[l
                 detail=(
                     f"Across {len(all_moves)} S&P 500 names in this database, the median move was "
                     f"{_fmt(market)}, with {advancers} rising and {len(all_moves) - advancers} falling. "
-                    "When most of the market moves together, the cause is usually economy-wide news "
+                    "When most of the market moves together, the cause is usually economy wide news "
                     "rather than anything specific to one company."
                 ),
                 source="Computed from live Yahoo Finance quotes in this database",
@@ -154,7 +154,7 @@ async def _volatility_context(db: AsyncSession, ticker: str, change_pct: float) 
     else:
         verdict = "an ordinary day"
         nuance = (
-            "Most days like this have no single cause at all — it is just normal trading noise. "
+            "Most days like this have no single cause at all: it is just normal trading noise. "
             "Be suspicious of any story that claims otherwise."
         )
 
@@ -229,7 +229,7 @@ async def _filing_context(ticker: str, as_of: date) -> list[Evidence]:
                 title=f"{ticker} filed a {filing['form']} on {filing['filing_date']}",
                 detail=(
                     f"{filing['form_label']}: {filing['form_plain_english']} "
-                    "A filing this close to the move is a concrete, checkable event — read it yourself."
+                    "A filing this close to the move is a concrete, checkable event. Read it yourself."
                 ),
                 source="SEC EDGAR",
                 source_url=filing["document_url"],
@@ -268,7 +268,7 @@ def _attribution(change_pct: float, stats: dict[str, Any]) -> dict[str, Any] | N
     )[0]
     plain = {
         "market": "Most of today's move looks like the whole market moving, not this company specifically.",
-        "sector": "Most of today's move looks like an industry-wide move rather than company-specific news.",
+        "sector": "Most of today's move looks like an industry wide move rather than company specific news.",
         "company": "Most of today's move looks specific to this company rather than the market or its industry.",
     }[dominant]
 
@@ -285,9 +285,9 @@ def _attribution(change_pct: float, stats: dict[str, Any]) -> dict[str, Any] | N
         "dominant": dominant,
         "plain_english": plain,
         "method": (
-            "One-factor decomposition: market = median move of all covered S&P 500 names; "
-            "sector = median move of same-sector peers in excess of the market; "
-            "company-specific = the remainder. This is an approximation, not a regression-based factor model."
+            "One factor decomposition: market = median move of all covered S&P 500 names; "
+            "sector = median move of same sector peers in excess of the market; "
+            "company specific = the remainder. This is an approximation, not a regression based factor model."
         ),
     }
 
@@ -327,12 +327,12 @@ def deterministic_narrative(
             + ("" if len(filings) == 1 else "s")
             + " within a few days of this move: "
             + ", ".join(f"{e.numbers['form']} on {e.numbers['filed']}" for e in filings)
-            + ". That is the most concrete place to look for a company-specific cause."
+            + ". That is the most concrete place to look for a company specific cause."
         )
     else:
         parts.append(
             "No SEC filing landed within five days of this move, so there is no obvious "
-            "company-disclosed trigger in the public record."
+            "company disclosed trigger in the public record."
         )
 
     parts.append(
@@ -383,7 +383,7 @@ def to_prompt(company_name: str, ticker: str, change_pct: float, as_of: str, bun
         lines.append(
             f"- Move decomposition: market component {attribution['market_pct']:+.2f}%, "
             f"sector component {attribution['sector_excess_pct']:+.2f}%, "
-            f"company-specific component {attribution['company_specific_pct']:+.2f}%. "
+            f"company specific component {attribution['company_specific_pct']:+.2f}%. "
             f"Dominant factor: {attribution['dominant']}."
         )
     for item in bundle["evidence"]:
@@ -393,16 +393,16 @@ def to_prompt(company_name: str, ticker: str, change_pct: float, as_of: str, bun
 
     lines += [
         "",
-        "Write a plain-English explanation for a complete beginner, following these rules strictly:",
+        "Write a plain English explanation for a complete beginner, following these rules strictly:",
         "1. Use ONLY the evidence above. Do not mention any news, product launch, analyst action,",
         "   or event that does not appear in the evidence. If the evidence does not explain the move,",
         "   say plainly that it does not.",
-        "2. Lead with whether this was mostly a market move, an industry move, or company-specific.",
+        "2. Lead with whether this was mostly a market move, an industry move, or company specific.",
         "3. If the move is statistically ordinary, say so and warn against reading a story into noise.",
         "4. No investment advice. Hedge causal claims (likely, consistent with, may reflect).",
         "",
-        'Return JSON: {"narrative": string (120-180 words), "drivers": [{"title": string,',
-        '"explanation": string, "confidence": 0-100, "hedge": string}]}. Each driver must map to a',
+        'Return JSON: {"narrative": string (120 to 180 words), "drivers": [{"title": string,',
+        '"explanation": string, "confidence": 0 to 100, "hedge": string}]}. Each driver must map to a',
         "piece of evidence above. Confidence should reflect how directly the evidence supports it.",
     ]
     return "\n".join(lines)

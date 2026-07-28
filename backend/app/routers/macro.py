@@ -70,8 +70,8 @@ async def macro_dashboard(db: AsyncSession = Depends(get_db)):
                 "metric": "Recession Probability",
                 "value_display": f"{latest.value:.0f}%",
                 "plain_english": (
-                    f"About {latest.value:.0f}% — a public model estimate of recession odds. "
-                    "This moves with jobs, spending, and yield-curve data. It's a weather forecast for the economy, not destiny."
+                    f"About {latest.value:.0f}%: a public model estimate of recession odds. "
+                    "This moves with jobs, spending, and yield curve data. It's a weather forecast for the economy, not destiny."
                 ),
             }
         indicators.append(
@@ -120,7 +120,7 @@ async def macro_dashboard(db: AsyncSession = Depends(get_db)):
                 "category": "fed",
                 "plain_english": (
                     "The Federal Reserve will decide whether to raise, cut, or hold "
-                    "its main interest-rate target."
+                    "its main interest rate target."
                 ),
                 "source": fomc["source"],
             }
@@ -141,7 +141,7 @@ async def macro_dashboard(db: AsyncSession = Depends(get_db)):
             "plain_english": (
                 "When the Fed cuts rates, mortgages, credit cards, and business loans often get cheaper over time. "
                 "When it hikes, borrowing usually gets more expensive and savings rates can rise. "
-                "Market-implied odds are intentionally hidden until a reliable licensed source is connected."
+                "Market implied odds are intentionally hidden until a reliable licensed source is connected."
             ),
         },
         "events": events,
@@ -152,12 +152,12 @@ async def macro_dashboard(db: AsyncSession = Depends(get_db)):
             "fomc": fomc["source"],
             "freshness": freshness,
             "rate_sensitivity": (
-                "Educational historical-sensitivity estimate; not a live predictive model"
+                "Educational historical sensitivity estimate; not a live predictive model"
             ),
         },
         "yield_curve_note": (
-            "When the 2-year yield is higher than the 10-year (negative spread), the curve is 'inverted'. "
-            "Historically that pattern has often appeared before recessions — a tendency, not a guarantee."
+            "When the 2 year yield is higher than the 10 year (negative spread), the curve is 'inverted'. "
+            "Historically that pattern has often appeared before recessions: a tendency, not a guarantee."
         ),
     }
 
@@ -167,11 +167,11 @@ async def rate_sensitivity():
     seed = load_macro_seed()
     return {
         "description": (
-            "Historical correlation-style sensitivity of sectors to rising Fed rates "
+            "Historical correlation style sensitivity of sectors to rising Fed rates "
             "(negative = tended to weaken when rates rose). Educational estimate for the bubble map overlay."
         ),
         "sectors": seed.get("rate_sensitivity", {}),
-        "disclaimer": "Historical tendency only — not a prediction for any future rate move.",
+        "disclaimer": "Historical tendency only: not a prediction for any future rate move.",
     }
 
 

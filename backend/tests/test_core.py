@@ -22,7 +22,7 @@ ET = ZoneInfo("America/New_York")
             "Today's Close",
             False,
         ),
-        (datetime(2026, 7, 27, 8, tzinfo=ET), "premarket", "Pre-Market", False),
+        (datetime(2026, 7, 27, 8, tzinfo=ET), "premarket", "Premarket", False),
     ],
 )
 def test_market_session(moment, state, label, is_live):

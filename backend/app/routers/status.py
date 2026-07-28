@@ -74,7 +74,7 @@ async def status(db: AsyncSession = Depends(get_db)):
                 "notes": (
                     f"{with_fundamentals} of {companies} companies have a live P/E on file. "
                     f"Quotes refresh about every {settings.quote_refresh_minutes} minutes while "
-                    "the session is open. This is Yahoo's last-sale feed — not SIP / Level 1 "
+                    "the session is open. This is Yahoo's last sale feed, not SIP / Level 1 "
                     "institutional data. Rate limits are retried with backoff; numbers already "
                     "on disk are never replaced with synthetic filler. A handful of names without "
                     "usable SEC revenue tags fall back to Yahoo TTM revenue for the company row only."
@@ -96,8 +96,8 @@ async def status(db: AsyncSession = Depends(get_db)):
                 "status": "live" if financials_cached else "on demand",
                 "records": financials_cached,
                 "notes": (
-                    f"{financials_cached} companies have parsed income, balance-sheet, and cash-flow "
-                    "statements plus 12 computed ratios, straight from filings — no estimates."
+                    f"{financials_cached} companies have parsed income, balance sheet, and cash flow "
+                    "statements plus 12 computed ratios, straight from filings, with no estimates."
                 ),
             },
             {
@@ -123,11 +123,11 @@ async def status(db: AsyncSession = Depends(get_db)):
                 "provider": "Federal Reserve calendar + FRED release dates",
                 "status": "live" if events else "empty",
                 "records": events,
-                "notes": "Rate-decision probabilities are withheld — no free, reliable source is wired up.",
+                "notes": "Rate decision probabilities are withheld: no free, reliable source is wired up.",
             },
             {
                 "id": "ai",
-                "label": "Plain-English AI layer",
+                "label": "Plain English AI layer",
                 "provider": provider or "not configured",
                 "status": "live" if provider else "disabled",
                 "records": None,
