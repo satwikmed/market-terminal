@@ -43,7 +43,7 @@ export function Layout() {
 
           <div className="flex-1 flex flex-wrap items-center justify-between gap-3 px-4 md:px-6 py-3 bg-terminal-panel/90 backdrop-blur-[2px]">
             <p className="hidden md:block text-sm text-terminal-muted max-w-md leading-snug">
-              Map · filings · macro — explained without jargon. Public sources, plainly labeled.
+              Map · filings · macro, explained without jargon. Public sources, plainly labeled.
             </p>
             <nav className="flex flex-wrap items-center gap-1 ml-auto font-mono text-[11px] uppercase tracking-[0.14em]">
               {links.map((l) => (

@@ -24,7 +24,7 @@ const COLUMNS: { key: SortKey; label: string; numeric: boolean }[] = [
 ];
 
 function num(v: number | null | undefined): string {
-  return v == null ? '—' : v.toFixed(2);
+  return v == null ? 'n/a' : v.toFixed(2);
 }
 
 function pctClass(v: number | null | undefined): string {
@@ -94,7 +94,7 @@ export function ScreenerPage() {
         <h2 className="brand-mark text-[clamp(2rem,5vw,3.5rem)]">Filter all 503 names</h2>
         <p className="text-base text-terminal-muted mt-3 max-w-2xl leading-snug">
           Live fundamentals joined with momentum computed from two years of daily bars. Sort any column;
-          stack filters. Everything here is a real number — blanks mean the source didn&apos;t report it.
+          stack filters. Everything here is a real number: blanks mean the source didn&apos;t report it.
         </p>
       </div>
 
@@ -202,7 +202,7 @@ export function ScreenerPage() {
         </table>
         {filtered.length > 120 && (
           <p className="px-3 py-2 font-mono text-[11px] text-terminal-muted">
-            Showing top 120 by current sort — tighten filters to narrow.
+            Showing top 120 by current sort: tighten filters to narrow.
           </p>
         )}
       </div>

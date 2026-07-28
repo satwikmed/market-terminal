@@ -59,7 +59,7 @@ export function HomePage() {
           <div className="h-full grid place-items-center text-down p-8 text-center">
             <div>
               <p className="font-mono font-semibold">Backend unreachable</p>
-              <p className="text-sm text-terminal-muted mt-2">Start the API on :8000 — {error}</p>
+              <p className="text-sm text-terminal-muted mt-2">Start the API on :8000: {error}</p>
             </div>
           </div>
         ) : (
@@ -86,8 +86,7 @@ export function HomePage() {
             <span className="text-terminal-accent">.</span>
           </h1>
           <p className="mt-4 max-w-md text-base md:text-lg text-terminal-muted leading-snug">
-            Every company as a bubble. Size is market cap. Color is today’s move. Click anything —
-            we’ll explain it in English.
+            Every company as a bubble. Size is market cap. Color is today’s move. Click anything: we’ll explain it in English.
           </p>
           <div className="signal-rule w-16 mt-5" />
         </div>

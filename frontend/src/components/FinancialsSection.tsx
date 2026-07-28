@@ -15,12 +15,12 @@ import { api, formatMoney, type Financials } from '../lib/api';
 const RATIO_LABELS: { key: string; label: string; suffix: string; plain: string }[] = [
   { key: 'gross_margin', label: 'Gross margin', suffix: '%', plain: 'Cents of gross profit per $1 of sales.' },
   { key: 'operating_margin', label: 'Operating margin', suffix: '%', plain: 'Profit from core operations per $1 of sales.' },
-  { key: 'net_margin', label: 'Net margin', suffix: '%', plain: 'Bottom-line profit per $1 of sales.' },
+  { key: 'net_margin', label: 'Net margin', suffix: '%', plain: 'Bottom line profit per $1 of sales.' },
   { key: 'roe', label: 'Return on equity', suffix: '%', plain: 'Profit generated on shareholder capital.' },
   { key: 'roa', label: 'Return on assets', suffix: '%', plain: 'Profit generated on total assets.' },
   { key: 'fcf_margin', label: 'FCF margin', suffix: '%', plain: 'Free cash flow per $1 of sales.' },
-  { key: 'debt_to_equity', label: 'Debt / equity', suffix: '×', plain: 'Long-term debt relative to equity.' },
-  { key: 'current_ratio', label: 'Current ratio', suffix: '×', plain: 'Short-term assets vs short-term bills.' },
+  { key: 'debt_to_equity', label: 'Debt / equity', suffix: '×', plain: 'Long term debt relative to equity.' },
+  { key: 'current_ratio', label: 'Current ratio', suffix: '×', plain: 'Short term assets vs short term bills.' },
   { key: 'revenue_cagr', label: 'Revenue CAGR', suffix: '%', plain: 'Annualized sales growth over the window.' },
   { key: 'rnd_intensity', label: 'R&D intensity', suffix: '%', plain: 'R&D spend per $1 of sales.' },
 ];
@@ -76,13 +76,13 @@ export function FinancialsSection({ ticker }: { ticker: string }) {
           Financial statements · from SEC filings
         </h3>
         <a href={data.source_url} target="_blank" rel="noreferrer" className="font-mono text-[10px] text-terminal-muted hover:text-terminal-accent">
-          {data.fiscal_years[0]}–{data.latest_fiscal_year} · EDGAR ↗
+          {data.fiscal_years[0]} to {data.latest_fiscal_year} · EDGAR ↗
         </a>
       </div>
 
       {data.negative_equity && (
         <p className="mt-3 border-l-2 border-terminal-warn/60 pl-2.5 text-xs text-terminal-muted leading-relaxed">
-          Book equity is negative — years of buybacks have exceeded retained earnings. Return on
+          Book equity is negative: years of buybacks have exceeded retained earnings. Return on
           equity and debt/equity divide by that figure, so they are not meaningful and are left
           blank rather than shown as large negative numbers.
         </p>
@@ -95,7 +95,7 @@ export function FinancialsSection({ ticker }: { ticker: string }) {
             <div key={r.key} className="border border-terminal-border/70 p-2.5 group relative">
               <div className="font-mono text-[9px] uppercase tracking-[0.1em] text-terminal-muted">{r.label}</div>
               <div className="mt-0.5 text-lg font-semibold font-mono tabular-nums text-terminal-text">
-                {v == null ? '—' : `${v}${r.suffix}`}
+                {v == null ? 'n/a' : `${v}${r.suffix}`}
               </div>
               <div className="text-[10px] text-terminal-muted leading-tight mt-0.5">{r.plain}</div>
             </div>
@@ -168,7 +168,7 @@ export function FinancialsSection({ ticker }: { ticker: string }) {
                 <td className="px-2 py-1.5 text-terminal-muted whitespace-nowrap">{r.label}</td>
                 {r.vals.map((v, i) => (
                   <td key={i} className="px-2 py-1.5 text-right">
-                    {v == null ? '—' : r.isEps ? `$${v.toFixed(2)}` : (v / 1e6).toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                    {v == null ? 'n/a' : r.isEps ? `$${v.toFixed(2)}` : (v / 1e6).toLocaleString(undefined, { maximumFractionDigits: 0 })}
                   </td>
                 ))}
               </tr>
@@ -176,7 +176,7 @@ export function FinancialsSection({ ticker }: { ticker: string }) {
           </tbody>
         </table>
       </div>
-      <p className="mt-3 font-mono text-[10px] text-terminal-muted">{data.source} · as-filed values, not restated.</p>
+      <p className="mt-3 font-mono text-[10px] text-terminal-muted">{data.source} · as filed values, not restated.</p>
     </section>
   );
 }

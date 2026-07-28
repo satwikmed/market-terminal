@@ -14,7 +14,7 @@ describe('financial formatters', () => {
   });
 
   it('does not invent missing values', () => {
-    expect(formatMoney(null)).toBe('—');
-    expect(formatPct(undefined)).toBe('—');
+    expect(formatMoney(null)).toBe('n/a');
+    expect(formatPct(undefined)).toBe('n/a');
   });
 });

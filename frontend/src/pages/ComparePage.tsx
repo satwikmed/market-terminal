@@ -19,19 +19,19 @@ type RowDef = {
 };
 
 function pct(v: number | null | undefined): string {
-  return v == null ? '—' : `${v.toFixed(1)}%`;
+  return v == null ? 'n/a' : `${v.toFixed(1)}%`;
 }
 function num(v: number | null | undefined, d = 2): string {
-  return v == null ? '—' : v.toFixed(d);
+  return v == null ? 'n/a' : v.toFixed(d);
 }
 
 const ROWS: RowDef[] = [
   { label: 'Valuation', get: () => '', group: true },
-  { label: 'Price', get: (c) => (c.company?.price != null ? `$${c.company.price.toFixed(2)}` : '—') },
+  { label: 'Price', get: (c) => (c.company?.price != null ? `$${c.company.price.toFixed(2)}` : 'n/a') },
   { label: 'Market cap', get: (c) => formatMoney(c.company?.market_cap), raw: (c) => c.company?.market_cap ?? null, better: 'high' },
   { label: 'P/E ratio', get: (c) => num(c.company?.pe_ratio), raw: (c) => c.company?.pe_ratio ?? null, better: 'low' },
-  { label: 'EPS (TTM)', get: (c) => (c.company?.eps != null ? `$${c.company.eps.toFixed(2)}` : '—') },
-  { label: 'Dividend yield', get: (c) => (c.company?.dividend_yield != null ? `${(c.company.dividend_yield * 100).toFixed(2)}%` : '—') },
+  { label: 'EPS (TTM)', get: (c) => (c.company?.eps != null ? `$${c.company.eps.toFixed(2)}` : 'n/a') },
+  { label: 'Dividend yield', get: (c) => (c.company?.dividend_yield != null ? `${(c.company.dividend_yield * 100).toFixed(2)}%` : 'n/a') },
 
   { label: 'Profitability (latest FY)', get: () => '', group: true },
   { label: 'Revenue', get: (c) => formatMoney(lastVal(c.financials?.statements.income.revenue)), raw: (c) => lastVal(c.financials?.statements.income.revenue), better: 'high' },
@@ -43,7 +43,7 @@ const ROWS: RowDef[] = [
   { label: 'Revenue CAGR', get: (c) => pct(c.financials?.ratios.revenue_cagr), raw: (c) => c.financials?.ratios.revenue_cagr ?? null, better: 'high' },
   { label: 'Debt / equity', get: (c) => num(c.financials?.ratios.debt_to_equity), raw: (c) => c.financials?.ratios.debt_to_equity ?? null, better: 'low' },
 
-  { label: 'Risk (2-year)', get: () => '', group: true },
+  { label: 'Risk (2 year)', get: () => '', group: true },
   { label: 'Beta vs SPY', get: (c) => num(c.risk?.beta), raw: (c) => c.risk?.beta ?? null, better: 'low' },
   { label: 'Volatility', get: (c) => pct(c.risk?.annualized_volatility_pct), raw: (c) => c.risk?.annualized_volatility_pct ?? null, better: 'low' },
   { label: 'Sharpe ratio', get: (c) => num(c.risk?.sharpe_ratio), raw: (c) => c.risk?.sharpe_ratio ?? null, better: 'high' },
@@ -124,7 +124,7 @@ export function ComparePage() {
         <p className="font-mono text-[10px] uppercase tracking-[0.28em] text-terminal-accent mb-2">Compare</p>
         <h2 className="brand-mark text-[clamp(2rem,5vw,3.5rem)]">Head to head</h2>
         <p className="text-base text-terminal-muted mt-3 max-w-2xl leading-snug">
-          Up to four names side by side across valuation, profitability from SEC filings, and 2-year risk.
+          Up to four names side by side across valuation, profitability from SEC filings, and 2 year risk.
           The <span className="text-terminal-accent">highlighted</span> cell wins each row.
         </p>
       </div>

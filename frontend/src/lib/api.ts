@@ -370,7 +370,7 @@ export type MacroDashboard = {
 };
 
 export function formatMoney(n?: number | null): string {
-  if (n == null) return '—';
+  if (n == null) return 'n/a';
   const abs = Math.abs(n);
   if (abs >= 1e12) return `$${(n / 1e12).toFixed(2)}T`;
   if (abs >= 1e9) return `$${(n / 1e9).toFixed(1)}B`;
@@ -379,6 +379,6 @@ export function formatMoney(n?: number | null): string {
 }
 
 export function formatPct(n?: number | null): string {
-  if (n == null) return '—';
+  if (n == null) return 'n/a';
   return `${n >= 0 ? '+' : ''}${n.toFixed(2)}%`;
 }

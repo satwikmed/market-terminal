@@ -79,7 +79,7 @@ export function MoveAnalysis({ ticker }: Props) {
             <div
               className="bg-terminal-accent grid place-items-center text-white"
               style={{ width: `${attribution.shares.company}%` }}
-              title={`Company-specific: ${attribution.company_specific_pct.toFixed(2)}%`}
+              title={`Company specific: ${attribution.company_specific_pct.toFixed(2)}%`}
             >
               {attribution.shares.company >= 12 ? `CO ${attribution.shares.company}%` : ''}
             </div>
@@ -98,7 +98,7 @@ export function MoveAnalysis({ ticker }: Props) {
 
       {shown.narrative_source === 'ai' && (
         <p className="mt-1 font-mono text-[10px] text-terminal-muted">
-          Written by {shown.provider} from the evidence below — it was not allowed to add anything else.
+          Written by {shown.provider} from the evidence below: it was not allowed to add anything else.
         </p>
       )}
 

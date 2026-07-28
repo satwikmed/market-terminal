@@ -60,12 +60,12 @@ export function StatusPage() {
             <div className="font-mono text-[10px] uppercase tracking-wider text-terminal-warn">
               {status.initial_load.state === 'retrying'
                 ? 'Data load retrying'
-                : 'First-time data load in progress'}
+                : 'First time data load in progress'}
             </div>
             <p className="text-sm text-terminal-muted mt-2 leading-relaxed">
               {status.initial_load.state === 'retrying'
-                ? 'The market data provider is rate-limiting this instance. The load backs off and retries automatically; existing numbers stay as they are in the meantime.'
-                : 'This instance is populating its database from scratch — 503 companies of quotes, fundamentals, and two years of daily price history. It takes a few minutes. Numbers will fill in as it goes; refresh this page to check on it.'}
+                ? 'The market data provider is rate limiting this instance. The load backs off and retries automatically; existing numbers stay as they are in the meantime.'
+                : 'This instance is populating its database from scratch: 503 companies of quotes, fundamentals, and two years of daily price history. It takes a few minutes. Numbers will fill in as it goes; refresh this page to check on it.'}
             </p>
           </div>
         )}
@@ -77,7 +77,7 @@ export function StatusPage() {
           </div>
           <p className="text-sm text-terminal-muted mt-2 leading-relaxed">
             This instance could not reach the market data provider, so prices below may be stale.
-            Nothing shown is estimated or synthetic — figures are whatever was last successfully
+            Nothing shown is estimated or synthetic: figures are whatever was last successfully
             fetched, and the scheduler keeps retrying.
           </p>
         </div>
@@ -136,7 +136,7 @@ export function StatusPage() {
                   return (
                     <tr key={j.id} className="border-t border-terminal-border/60">
                       <td className="py-1.5">{j.id}</td>
-                      <td className="py-1.5 text-terminal-muted">{j.next_run ?? '—'}</td>
+                      <td className="py-1.5 text-terminal-muted">{j.next_run ?? 'n/a'}</td>
                       <td className="py-1.5 text-terminal-muted">
                         {last ? `${last.status} · ${last.at}` : 'not run yet'}
                       </td>
@@ -159,8 +159,8 @@ export function StatusPage() {
             estimate.
           </li>
           <li>
-            Claim SIP / Level&nbsp;1 institutional quotes. Prices come from Yahoo&apos;s last-sale
-            feed and refresh on a schedule — useful for education, not for trading desks.
+            Claim SIP / Level&nbsp;1 institutional quotes. Prices come from Yahoo&apos;s last sale
+            feed and refresh on a schedule: useful for education, not for trading desks.
           </li>
           <li>
             Hide rate limits. When Yahoo throttles a cold deploy, the load retries with backoff and
@@ -171,7 +171,7 @@ export function StatusPage() {
             move explanations are bounded to evidence computed here.
           </li>
           <li>
-            Publish rate-decision probabilities. Those require a futures data feed this project does
+            Publish rate decision probabilities. Those require a futures data feed this project does
             not have, so the field stays empty rather than guessing.
           </li>
           <li>Give investment advice, price targets, or buy/sell signals.</li>

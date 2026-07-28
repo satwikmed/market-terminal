@@ -72,7 +72,7 @@ export function MacroPage() {
               <div key={k} className="border border-terminal-border py-3">
                 <div className="text-[10px] uppercase text-terminal-muted tracking-wider">{k}</div>
                 <div className="text-xl mt-1">
-                  {data.fed.probabilities[k] == null ? '—' : `${data.fed.probabilities[k]}%`}
+                  {data.fed.probabilities[k] == null ? 'n/a' : `${data.fed.probabilities[k]}%`}
                 </div>
               </div>
             ))}
@@ -80,7 +80,7 @@ export function MacroPage() {
           <p className="text-sm text-terminal-muted mt-4 leading-relaxed">{data.fed.plain_english}</p>
           <p className="text-xs text-terminal-muted mt-2 font-mono">
             {data.fed.probabilities_available
-              ? 'Market-implied odds are estimates, not promises.'
+              ? 'Market implied odds are estimates, not promises.'
               : 'Probability data withheld until a reliable licensed source is connected.'}
           </p>
         </section>
@@ -136,7 +136,7 @@ export function MacroPage() {
         <section className="panel-plain p-4">
           <h3 className="font-mono text-[10px] uppercase tracking-[0.16em] text-terminal-accent">Recession probability</h3>
           <p className="text-4xl font-mono mt-3 tabular-nums text-terminal-warn">
-            {recession?.value.toFixed(0) ?? '—'}%
+            {recession?.value.toFixed(0) ?? 'n/a'}%
           </p>
           <p className="text-sm text-terminal-muted mt-2 leading-relaxed">{recession?.plain_english}</p>
           <h4 className="font-mono text-[10px] uppercase tracking-[0.16em] text-terminal-muted mt-6">Economic calendar</h4>

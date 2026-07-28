@@ -51,22 +51,22 @@ export function RiskPanel({ ticker }: { ticker: string }) {
   return (
     <section className="panel-plain p-4">
       <div className="flex items-baseline justify-between gap-3 flex-wrap">
-        <h3 className="font-mono text-[10px] uppercase tracking-[0.16em] text-terminal-accent">Risk profile · 2-year</h3>
+        <h3 className="font-mono text-[10px] uppercase tracking-[0.16em] text-terminal-accent">Risk profile · 2 year</h3>
         <span className="font-mono text-[10px] text-terminal-muted">{r.observations} sessions vs {r.benchmark}</span>
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mt-3">
-        <Stat label="Beta" value={r.beta?.toFixed(2) ?? '—'} hint={r.beta != null ? (r.beta > 1 ? 'Swings more than market' : 'Steadier than market') : undefined} />
+        <Stat label="Beta" value={r.beta?.toFixed(2) ?? 'n/a'} hint={r.beta != null ? (r.beta > 1 ? 'Swings more than market' : 'Steadier than market') : undefined} />
         <Stat label="Volatility" value={`${r.annualized_volatility_pct}%`} hint="Annualized" />
-        <Stat label="Sharpe" value={r.sharpe_ratio?.toFixed(2) ?? '—'} hint="Return per unit risk" />
-        <Stat label="Max drawdown" value={`${r.max_drawdown_pct}%`} hint="Worst peak-to-trough" />
+        <Stat label="Sharpe" value={r.sharpe_ratio?.toFixed(2) ?? 'n/a'} hint="Return per unit risk" />
+        <Stat label="Max drawdown" value={`${r.max_drawdown_pct}%`} hint="Worst peak to trough" />
         <Stat label="2Y return" value={`${r.annualized_return_pct}%`} hint="Annualized" />
-        <Stat label="RSI(14)" value={r.rsi_14?.toFixed(0) ?? '—'} hint={r.rsi_14 != null ? (r.rsi_14 > 70 ? 'Overbought' : r.rsi_14 < 30 ? 'Oversold' : 'Neutral') : undefined} />
+        <Stat label="RSI(14)" value={r.rsi_14?.toFixed(0) ?? 'n/a'} hint={r.rsi_14 != null ? (r.rsi_14 > 70 ? 'Overbought' : r.rsi_14 < 30 ? 'Oversold' : 'Neutral') : undefined} />
       </div>
 
       <div className="mt-4">
         <div className="flex justify-between font-mono text-[10px] text-terminal-muted mb-1">
-          <span>52-wk low ${r.week52_low.toFixed(2)}</span>
+          <span>52 wk low ${r.week52_low.toFixed(2)}</span>
           <span>${r.price.toFixed(2)}</span>
           <span>${r.week52_high.toFixed(2)} high</span>
         </div>
@@ -77,14 +77,14 @@ export function RiskPanel({ ticker }: { ticker: string }) {
 
       {r.sma_50 != null && r.sma_200 != null && (
         <p className="mt-3 font-mono text-[11px] text-terminal-muted">
-          50-day ${r.sma_50.toFixed(2)} · 200-day ${r.sma_200.toFixed(2)} ·{' '}
+          50 day ${r.sma_50.toFixed(2)} · 200 day ${r.sma_200.toFixed(2)} ·{' '}
           <span className={r.ma_cross === 'golden' ? 'text-up' : 'text-down'}>
             {r.ma_cross === 'golden' ? 'golden cross (uptrend)' : 'death cross (downtrend)'}
           </span>
         </p>
       )}
       <p className="mt-1 font-mono text-[10px] text-terminal-muted">
-        Risk-free {r.risk_free_pct}% · computed here from stored daily bars.
+        Risk free {r.risk_free_pct}% · computed here from stored daily bars.
       </p>
     </section>
   );

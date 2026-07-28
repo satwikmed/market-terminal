@@ -141,7 +141,7 @@ export function RiskPage() {
         <h2 className="brand-mark text-[clamp(2rem,5vw,3.75rem)]">Risk &amp; volatility</h2>
         <p className="text-base text-terminal-muted mt-3 max-w-2xl leading-snug">
           Beta, volatility, drawdown, and correlations computed from two years of daily closes, measured
-          against SPY. This is the math desks actually use to size risk — here it&apos;s legible.
+          against SPY. This is the math desks actually use to size risk: here it&apos;s legible.
         </p>
       </div>
 
@@ -154,10 +154,10 @@ export function RiskPage() {
 
       <section className="panel-plain p-4">
         <h3 className="font-mono text-[10px] uppercase tracking-[0.16em] text-terminal-accent">
-          Risk vs reward · volatility (x) against 2-year return (y)
+          Risk vs reward · volatility (x) against 2 year return (y)
         </h3>
         <p className="text-xs text-terminal-muted mt-1 mb-3">
-          Bubble size = market cap. Bottom-right = high risk, low reward. Top-left = the holy grail.
+          Bubble size = market cap. Bottom right = high risk, low reward. Top left = the holy grail.
         </p>
         <div className="h-96">
           {loading ? (
@@ -242,10 +242,10 @@ export function RiskPage() {
                         {r.ticker}
                       </Link>
                     </td>
-                    <td className="px-2 py-1.5 text-right font-mono tabular-nums">{r.beta?.toFixed(2) ?? '—'}</td>
+                    <td className="px-2 py-1.5 text-right font-mono tabular-nums">{r.beta?.toFixed(2) ?? 'n/a'}</td>
                     <td className="px-2 py-1.5 text-right font-mono tabular-nums">{r.volatility_pct.toFixed(1)}%</td>
                     <td className="px-2 py-1.5 text-right font-mono tabular-nums text-down">{r.max_drawdown_pct.toFixed(1)}%</td>
-                    <td className="px-2 py-1.5 text-right font-mono tabular-nums">{r.rsi_14?.toFixed(0) ?? '—'}</td>
+                    <td className="px-2 py-1.5 text-right font-mono tabular-nums">{r.rsi_14?.toFixed(0) ?? 'n/a'}</td>
                     <td className={`px-2 py-1.5 text-right font-mono tabular-nums ${r.return_window_pct >= 0 ? 'text-up' : 'text-down'}`}>
                       {r.return_window_pct.toFixed(1)}%
                     </td>
@@ -297,7 +297,7 @@ export function RiskPage() {
                           style={{ background: corrColor(v), color: v != null && Math.abs(v) > 0.6 ? '#fff' : '#0a0b0e' }}
                           title={`${corr.tickers[i]} ↔ ${corr.tickers[j]}: ${v ?? 'n/a'}`}
                         >
-                          {v == null ? '—' : v.toFixed(2)}
+                          {v == null ? 'n/a' : v.toFixed(2)}
                         </td>
                       ))}
                     </tr>
@@ -305,7 +305,7 @@ export function RiskPage() {
                 </tbody>
               </table>
               <p className="mt-2 text-[10px] font-mono text-terminal-muted">
-                {corr.observations} shared trading days · daily-return correlation
+                {corr.observations} shared trading days · daily return correlation
               </p>
             </div>
           )}

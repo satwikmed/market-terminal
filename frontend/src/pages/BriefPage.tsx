@@ -11,7 +11,7 @@ export function BriefPage() {
       <p className="font-mono text-[10px] uppercase tracking-[0.28em] text-terminal-accent mb-2">Weekly brief</p>
       <h2 className="brand-mark text-[clamp(2rem,5vw,3.5rem)]">State of the Union</h2>
       <p className="text-base text-terminal-muted mt-3 leading-snug max-w-xl">
-        One plain-English narrative for the week — market moves, filings, and the Fed. Generated on demand and cached
+        One plain English narrative for the week: market moves, filings, and the Fed. Generated on demand and cached
         so we don&apos;t burn tokens regenerating it.
       </p>
       <div className="signal-rule w-14 mt-5" />

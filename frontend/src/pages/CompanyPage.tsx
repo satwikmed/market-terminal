@@ -147,7 +147,7 @@ export function CompanyPage() {
         </div>
         <div className="text-right">
           <div className="font-mono text-4xl tabular-nums tracking-tight">
-            ${company.price?.toFixed(2) ?? '—'}
+            ${company.price?.toFixed(2) ?? 'n/a'}
           </div>
           <div className={`font-mono text-sm mt-1 ${up ? 'text-up' : 'text-down'}`}>
             {formatPct(company.change_pct)} · {company.quote_label}
@@ -163,7 +163,7 @@ export function CompanyPage() {
           <div className="h-72">
             {history.length === 0 ? (
               <div className="h-full grid place-items-center text-sm text-terminal-muted">
-                Chart history seeds for spotlight names first — try AAPL, NVDA, MSFT.
+                Chart history seeds for spotlight names first: try AAPL, NVDA, MSFT.
               </div>
             ) : (
               <ResponsiveContainer width="100%" height="100%">
@@ -241,7 +241,7 @@ export function CompanyPage() {
         <section className="panel-plain p-4">
           <h3 className="font-mono text-[10px] uppercase tracking-[0.16em] text-terminal-accent">Business relationships</h3>
           <ul className="mt-3 space-y-3 max-h-64 overflow-auto">
-            {rels.length === 0 && <li className="text-sm text-terminal-muted">Curated coverage expanding — major names first.</li>}
+            {rels.length === 0 && <li className="text-sm text-terminal-muted">Curated coverage expanding: major names first.</li>}
             {rels.map((r) => (
               <li key={r.target_ticker}>
                 <Link to={`/company/${r.target_ticker}`} className="font-mono text-terminal-accent hover:underline">

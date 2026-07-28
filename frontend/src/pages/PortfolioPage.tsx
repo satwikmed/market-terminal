@@ -70,7 +70,7 @@ export function PortfolioPage() {
         <h2 className="brand-mark text-[clamp(2rem,5vw,3.75rem)]">Build a basket, test it</h2>
         <p className="text-base text-terminal-muted mt-3 max-w-2xl leading-snug">
           Pick names and weights, then replay the last two years against the S&amp;P 500. You get return,
-          volatility, Sharpe, drawdown, beta, and each holding&apos;s contribution — a buy-and-hold
+          volatility, Sharpe, drawdown, beta, and each holding&apos;s contribution: a buy and hold
           simulation from real daily closes. Educational, not advice.
         </p>
       </div>
@@ -136,7 +136,7 @@ export function PortfolioPage() {
               Total weight {totalWeight}% · normalized to 100% on run
             </p>
             <button onClick={run} disabled={busy || holdings.length === 0} className="btn-signal w-full mt-3 disabled:opacity-50">
-              {busy ? 'Running backtest…' : 'Run 2-year backtest'}
+              {busy ? 'Running backtest…' : 'Run 2 year backtest'}
             </button>
             {error && <p className="mt-2 font-mono text-[11px] text-down">{error}</p>}
           </div>
@@ -154,9 +154,9 @@ export function PortfolioPage() {
                 <Metric label="vs S&P 500" value={`${result.metrics.excess_return_pct != null && result.metrics.excess_return_pct >= 0 ? '+' : ''}${result.metrics.excess_return_pct}%`} tone={(result.metrics.excess_return_pct ?? 0) >= 0 ? 'up' : 'down'} />
                 <Metric label="CAGR" value={`${result.metrics.cagr_pct}%`} />
                 <Metric label="Volatility" value={`${result.metrics.annualized_volatility_pct}%`} />
-                <Metric label="Sharpe" value={result.metrics.sharpe_ratio?.toFixed(2) ?? '—'} />
+                <Metric label="Sharpe" value={result.metrics.sharpe_ratio?.toFixed(2) ?? 'n/a'} />
                 <Metric label="Max drawdown" value={`${result.metrics.max_drawdown_pct}%`} tone="down" />
-                <Metric label="Beta vs SPY" value={result.metrics.beta_vs_spy?.toFixed(2) ?? '—'} />
+                <Metric label="Beta vs SPY" value={result.metrics.beta_vs_spy?.toFixed(2) ?? 'n/a'} />
                 <Metric label="S&P return" value={`${result.metrics.benchmark_total_return_pct}%`} />
               </div>
 

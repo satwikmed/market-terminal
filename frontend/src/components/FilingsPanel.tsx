@@ -178,7 +178,7 @@ export function FilingsPanel({ ticker }: Props) {
               <p className="mt-2 text-sm leading-relaxed whitespace-pre-wrap">{translation}</p>
               {!aiUnavailable && (
                 <p className="mt-2 text-[10px] font-mono text-terminal-muted">
-                  Translated from the filing text below — nothing added from outside the document.
+                  Translated from the filing text below: nothing added from outside the document.
                 </p>
               )}
             </div>
@@ -197,7 +197,7 @@ export function FilingsPanel({ ticker }: Props) {
               <p className="text-xs text-terminal-muted mt-1">{raw.section_plain_english}</p>
               <pre className="mt-2 max-h-72 overflow-auto whitespace-pre-wrap text-[12px] leading-relaxed text-terminal-muted border border-terminal-border/60 p-3 bg-terminal-bg/60">
                 {raw.excerpt}
-                {raw.truncated ? '\n\n[truncated — open on SEC.gov for the full section]' : ''}
+                {raw.truncated ? '\n\n[truncated: open on SEC.gov for the full section]' : ''}
               </pre>
             </div>
           )}

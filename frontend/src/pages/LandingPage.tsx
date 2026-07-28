@@ -5,62 +5,62 @@ import { SignalAtmosphere } from '../components/SignalAtmosphere';
 const layers = [
   {
     n: '01',
-    title: 'Micro — every company, explained',
+    title: 'Micro: every company, explained',
     body: (
       <>
         All <strong className="text-terminal-text font-semibold">503 current S&amp;P 500 constituents</strong>{' '}
-        live in one universe. Open any ticker and you get Yahoo Finance last-sale quotes (refreshed
-        throughout the session — not SIP / Level&nbsp;1), two years of price history with macro event
+        live in one universe. Open any ticker and you get Yahoo Finance last sale quotes (refreshed
+        throughout the session, not SIP / Level&nbsp;1), two years of price history with macro event
         markers, and <strong className="text-terminal-text font-semibold">full financial statements
-        pulled straight from SEC XBRL filings</strong> — revenue, margins, cash flow, and a dozen
-        computed ratios going back to 2019. Market-cap analogies and metric tooltips translate every
+        pulled straight from SEC XBRL filings</strong>: revenue, margins, cash flow, and a dozen
+        computed ratios going back to 2019. Market cap analogies and metric tooltips translate every
         number, so you never have to already know what P/E, beta, or free cash flow mean.
       </>
     ),
   },
   {
     n: '02',
-    title: 'Meso — how companies connect',
+    title: 'Meso: how companies connect',
     body: (
       <>
         The bubble map is the product’s center of gravity: size is market cap, color is today’s move,
-        clusters are sectors. Switch into relationship mode and every name has a network — curated
-        supplier / customer / partner edges plus explicitly labeled industry peers — so the map is
-        explorable end-to-end, not a handful of famous stocks. A third mode paints sectors by
+        clusters are sectors. Switch into relationship mode and every name has a network: curated
+        supplier / customer / partner edges plus explicitly labeled industry peers, so the map is
+        explorable end to end, not a handful of famous stocks. A third mode paints sectors by
         historical rate sensitivity, tying the meso view to the macro layer.
       </>
     ),
   },
   {
     n: '03',
-    title: 'Macro — the economy behind the tape',
+    title: 'Macro: the economy behind the tape',
     body: (
       <>
         Inflation, jobs, rates, GDP, the yield curve, and the Fed calendar come from{' '}
         <strong className="text-terminal-text font-semibold">live FRED series</strong> and the official
-        FOMC schedule. Observation dates are shown on purpose. Rate-decision probabilities stay blank:
-        we refuse to invent a futures market we don’t have. Sector rate-sensitivity scores feed back
-        into the map so macro isn’t a separate brochure — it’s connective tissue.
+        FOMC schedule. Observation dates are shown on purpose. Rate decision probabilities stay blank:
+        we refuse to invent a futures market we don’t have. Sector rate sensitivity scores feed back
+        into the map so macro isn’t a separate brochure: it’s connective tissue.
       </>
     ),
   },
   {
     n: '04',
-    title: 'Grounded AI — no invented causes',
+    title: 'Grounded AI: no invented causes',
     body: (
       <>
         Filing translations pull real Risk Factors / MD&amp;A text from{' '}
         <strong className="text-terminal-text font-semibold">SEC EDGAR</strong> and show the source
         beside the output. “Why did this move?” first decomposes the day into market, industry, and
-        company-specific pieces, checks volatility and nearby filings, then lets a model narrate{' '}
-        <em>only</em> that evidence. With no API key, the deterministic summary still works — the app
+        company specific pieces, checks volatility and nearby filings, then lets a model narrate{' '}
+        <em>only</em> that evidence. With no API key, the deterministic summary still works: the app
         never pretends an LLM is required to be useful.
       </>
     ),
   },
   {
     n: '05',
-    title: 'Quant — the analyst toolkit',
+    title: 'Quant: the analyst toolkit',
     body: (
       <>
         Four working tools, not screenshots. A{' '}
@@ -70,8 +70,8 @@ const layers = [
         returns against SPY. A <strong className="text-terminal-text font-semibold">portfolio
         backtester</strong> replays any weighted basket versus the S&amp;P and attributes every point of
         return. And a <strong className="text-terminal-text font-semibold">compare</strong> view puts four
-        companies head-to-head across valuation, profitability, and risk. Every figure is computed here,
-        from stored data — nothing is mocked.
+        companies head to head across valuation, profitability, and risk. Every figure is computed here,
+        from stored data: nothing is mocked.
       </>
     ),
   },
@@ -81,10 +81,10 @@ const layers = [
     body: (
       <>
         Ownership and insider activity come from filing-derived Yahoo data with report dates.
-        Unavailable fundamentals show as unavailable — never as synthetic filler. A few names without
-        usable SEC revenue tags fall back to Yahoo TTM for the company-row figure only; multi-year
-        statements stay filing-sourced or blank. The Sources page lists every provider, record count,
-        and how stale it is — and states plainly what this is not: no Level&nbsp;1 tape, no invented
+        Unavailable fundamentals show as unavailable, never as synthetic filler. A few names without
+        usable SEC revenue tags fall back to Yahoo TTM for the company row figure only; multi year
+        statements stay filing sourced or blank. The Sources page lists every provider, record count,
+        and how stale it is, and states plainly what this is not: no Level&nbsp;1 tape, no invented
         odds, no advice.
       </>
     ),
@@ -139,9 +139,9 @@ export function LandingPage() {
             </h1>
             <div className="signal-rule mt-5" />
             <p className="mt-6 text-lg md:text-xl text-terminal-muted leading-relaxed max-w-2xl">
-              Lumen is a full-stack S&amp;P 500 research app for people who are curious about markets
+              Lumen is a full stack S&amp;P 500 research app for people who are curious about markets
               but allergic to jargon. React + TypeScript on the front, FastAPI + a live data pipeline
-              on the back. The point isn’t denser charts — it’s making every number, filing, and price
+              on the back. The point isn’t denser charts: it’s making every number, filing, and price
               move readable without faking data to look smarter.
             </p>
             <div className="mt-8 flex flex-wrap items-center gap-3">
@@ -174,10 +174,10 @@ export function LandingPage() {
                 Finance UIs assume you already speak finance.
               </h2>
               <p className="mt-4 text-terminal-muted leading-relaxed">
-                Bloomberg-style terminals bury beginners in tickers and acronyms. Consumer apps often
-                go the other way — friendly UI, fuzzy or synthetic numbers. Lumen sits in the gap:
-                real data from Yahoo Finance, SEC EDGAR, and FRED, with plain-English explanations
-                bolted on as a first-class layer, not a tooltip afterthought.
+                Bloomberg style terminals bury beginners in tickers and acronyms. Consumer apps often
+                go the other way: friendly UI, fuzzy or synthetic numbers. Lumen sits in the gap:
+                real data from Yahoo Finance, SEC EDGAR, and FRED, with plain English explanations
+                bolted on as a first class layer, not a tooltip afterthought.
               </p>
             </div>
             <div className="font-mono text-[13px] leading-relaxed text-terminal-muted space-y-3 md:pt-2">
@@ -185,19 +185,19 @@ export function LandingPage() {
                 What “in depth” means here
               </p>
               <p>
-                → 500+ companies with Yahoo last-sale quotes, fundamentals, and history
+                → 500+ companies with Yahoo last sale quotes, fundamentals, and history
               </p>
               <p>
                 → A D3 force map you can actually explore (industry · relationships · rates)
               </p>
               <p>
-                → Multi-year financial statements + 12 ratios from SEC XBRL (not invented)
+                → Multi year financial statements + 12 ratios from SEC XBRL (not invented)
               </p>
               <p>
                 → A quant desk: screener, risk lab, correlation heatmap, portfolio backtester
               </p>
               <p>
-                → SEC filings fetched under EDGAR fair-access rules, summarized with citations
+                → SEC filings fetched under EDGAR fair access rules, summarized with citations
               </p>
               <p>
                 → Move attribution that works before any AI key is configured
@@ -255,7 +255,7 @@ export function LandingPage() {
               },
               {
                 t: 'Read the filing',
-                d: 'Pull Risk Factors or MD&A from EDGAR, get a plain-English translation, keep the source link.',
+                d: 'Pull Risk Factors or MD&A from EDGAR, get a plain English translation, keep the source link.',
               },
               {
                 t: 'Zoom out to the economy',
@@ -307,8 +307,8 @@ export function LandingPage() {
             </div>
             <p className="mt-6 text-sm text-white/65 max-w-2xl leading-relaxed">
               Quotes refresh on a schedule while markets are open. Filings are fetched on demand under
-              EDGAR’s fair-access rules. AI responses are cached by content fingerprint so the same
-              filing doesn’t burn tokens twice. The Sources page lists freshness for every provider —
+              EDGAR’s fair access rules. AI responses are cached by content fingerprint so the same
+              filing doesn’t burn tokens twice. The Sources page lists freshness for every provider,
               including when AI is disabled and the deterministic path still runs.
             </p>
             <div className="mt-10 flex flex-col sm:flex-row sm:items-center gap-4">
